@@ -1,6 +1,6 @@
 import time
-from collections import defaultdict, Counter
-from threading import Thread, Semaphore
+from collections import Counter
+from threading import Thread
 import requests
 from operator import itemgetter
 from FixedSizeQueue import FixedSizeQueue
@@ -14,12 +14,16 @@ class RequestScheduler(Thread):
         self.interval = interval
         self.results = FixedSizeQueue(int(600 / interval), key=itemgetter(0))
         self.timeout = timeout
+        self.set_stop = False
 
     def run(self):
-        while True:
-            time.sleep(self.interval)
+        while not self.set_stop:
             req = Requester(self.url, self.results, self.timeout)
             req.start()
+            time.sleep(self.interval)
+
+    def stop(self):
+        self.set_stop = True
 
 
 class Requester(Thread):
@@ -34,9 +38,11 @@ class Requester(Thread):
         t = time.time()
         try:
             response = requests.get(self.url, timeout=self.timeout)
-            self.queue.add((t, response.status_code, response.elapsed.microseconds))
+            self.queue.add((t, response.status_code, time.time()-t))
         except requests.exceptions.ConnectionError:
-            self.queue.add((t, 503, self.timeout))
+            self.queue.add((t, 503, time.time()-t))
+        except requests.exceptions.ReadTimeout:
+            self.queue.add((t, 408, self.timeout))
 
 
 class SiteMonitor:
@@ -67,12 +73,12 @@ class SiteMonitor:
 
     def update_metrics(self, idx, duration):
         availability, codes_count, max_elapsed, avg_elapsed = self.get_metrics(self.last_updates[idx], duration)
+        self.last_updates[idx] = time.time()
         if duration == 120:
             self.availability.append(availability)
         self.codes_count[idx] = codes_count
         self.max_elapsed[idx] = max_elapsed
         self.avg_elapsed[idx] = avg_elapsed
-        self.last_updates[idx] = time.time()
 
     def get_metrics(self, start, duration):
         responses = self.request_scheduler.results.get_slice(start, start + duration)
@@ -85,11 +91,15 @@ class SiteMonitor:
 
 
 if __name__ == '__main__':
-    pass
-    # monitor = SiteMonitor(1, 'http://google.com', 1)
-    # monitor.start()
-    # time.sleep(2)
-    # print()
+    scheduler = RequestScheduler(1, 'http://google.com', 5)
+    t = time.time()
+    scheduler.start()
+    time.sleep(6)
+    scheduler.stop()
+    time.sleep(6)
+    time_slice = scheduler.results.get_slice(t, t + 6)
+    print(time_slice)
+
 
 
 ##
