@@ -6,7 +6,18 @@ from threading import Semaphore
 # most of the time so very little comparisons are done
 
 
+"""
+RRRRRRR
+"""
+
 class FixedSizeQueue(list):
+
+    """A fixed size queue where items are kept in ascending order when compared by key.
+    :param int capacity: the maximum number of elements kept in the queue
+    :param key: the function to use to compare the elements
+    :ivar sem: a
+    """
+
     def __init__(self, capacity, key):
         super(list, self).__init__()
         self.capacity = capacity
@@ -27,6 +38,7 @@ class FixedSizeQueue(list):
         self.sem.release()
 
     def get_slice(self, min_value, max_value):
+        """FRRRRR"""
         self.sem.acquire()
         min_slice = max_slice = 0
         for i in range(len(self.h)):

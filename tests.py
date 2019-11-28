@@ -1,9 +1,10 @@
 import unittest
-
 from collections import Counter
-from FixedSizeQueue import FixedSizeQueue
+from fixed_size_queue import FixedSizeQueue
 from operator import itemgetter
-from main import RequestScheduler, Requester, SiteMonitor
+from request_scheduler import RequestScheduler
+from requester import Requester
+from site_monitor import SiteMonitor
 import time
 
 
@@ -61,14 +62,14 @@ class MyTestCase(unittest.TestCase):
         monitor.stop()
         time.sleep(5)
         self.assertAlmostEqual(monitor.unavailable_since, t + 120, 1)
-        self.assertEqual(monitor.availability[0], 0)
-        self.assertIsInstance(monitor.codes_count, list)
-        self.assertIsInstance(monitor.codes_count[0], Counter)
-        self.assertIsInstance(monitor.codes_count[1], Counter)
-        self.assertEqual(list(monitor.codes_count[0].keys()), [400])
-        self.assertEqual(list(monitor.codes_count[1].keys()), [400])
-        self.assertAlmostEqual(monitor.codes_count[0][400] / monitor.codes_count[1][400], 1, 2)
-        self.assertTrue(1100 < monitor.codes_count[0][400] <= 1200)
+        self.assertEqual(monitor.availability, 0)
+        self.assertIsInstance(monitor.metrics, dict)
+        self.assertIsInstance(monitor.metrics[10]['codes_count'], Counter)
+        self.assertIsInstance(monitor.metrics[60]['codes_count'], Counter)
+        self.assertEqual(list(monitor.metrics[10]['codes_count'].keys()), [400])
+        self.assertEqual(list(monitor.metrics[60]['codes_count']), [400])
+        self.assertAlmostEqual(monitor.metrics[10]['codes_count'][400] / monitor.metrics[60]['codes_count'][400], 1, 2)
+        self.assertTrue(1100 < monitor.metrics[10]['codes_count'][400] <= 1160)
 
 
 if __name__ == '__main__':
