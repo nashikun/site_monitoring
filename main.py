@@ -1,6 +1,6 @@
 import time
-from collections import Counter
-from threading import Thread, Semaphore
+from site_monitor import SiteMonitor
+
 
 class MainMonitor:
 

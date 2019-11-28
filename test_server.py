@@ -9,10 +9,7 @@ count = 0
 
 @app.route('/')
 def index():
-    # It sends a the headers here
-    # It waits
     time.sleep(random.random())
-    # It responds after waiting. But the headers are already sent
     resp = Response(status=200)
     return resp
 
