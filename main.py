@@ -103,7 +103,7 @@ class SiteMonitor(Thread):
             elif not self.unavailable_since:
                 self.unavailable_since = t
         self.last_updates[2] = t
-        self.availability.append(availability)
+        self.availability = availability
 
     def get_metrics(self, end, duration, delay):
         # print(end + delay - duration - self.timeout, end + delay - self.timeout, time.time())
@@ -111,29 +111,40 @@ class SiteMonitor(Thread):
                                                              end + delay - self.timeout)
         _, status_codes, elapsed = zip(*responses)
         codes_count = Counter(status_codes)
-        max_elapsed = max(elapsed) / 1000000
-        avg_elapsed = sum(elapsed) / len(elapsed) / 1000000
+        max_elapsed = max(elapsed)
+        avg_elapsed = sum(elapsed) / len(elapsed)
         availability = sum([codes_count[k] for k in codes_count.keys() if k < 400]) / len(responses)
         return availability, codes_count, max_elapsed, avg_elapsed
 
 
+class MainMonitor:
+
+    def __init__(self, sites):
+        self.site_monitors = []
+        for site in sites:
+            self.site_monitors.append(SiteMonitor(*site))
+
+    def start(self):
+        for monitor in self.site_monitors:
+            monitor.start()
+
+
+
 if __name__ == '__main__':
-    from asciimatics.screen import Screen
-    from asciimatics.scene import Scene
-    from asciimatics.effects import Cycle, Stars
-    from asciimatics.renderers import FigletText
-
-
-    def demo(screen):
-        i = 0
-        while i < 10:
-            screen.print_at('Hello world!, time is %s' % time.time(), 0, 0)
-            screen.refresh()
-            time.sleep(1)
-            i += 1
-
-
-    Screen.wrapper(demo)
+    from asciichartpy import plot
+    monitor = SiteMonitor(0.1, 'http://localhost:4444/delay?increment=0.1&reset_after=60', 5)
+    t = time.time()
+    monitor.start()
+    res_1 = []
+    res_2 = []
+    for _ in range(30):
+        time.sleep(11)
+        print(monitor.avg_elapsed)
+        res_1.append(int(10 * monitor.avg_elapsed[0]))
+        res_2.append(int(10 * monitor.max_elapsed[0]))
+    monitor.stop()
+    time.sleep(5)
+    print(plot(res_1))
 
 # TODO Add documentation. Don't forget params
 ##

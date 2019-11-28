@@ -9,6 +9,10 @@ count = 0
 
 @app.route('/')
 def index():
+    # It sends a the headers here
+    # It waits
+    time.sleep(random.random())
+    # It responds after waiting. But the headers are already sent
     resp = Response(status=200)
     return resp
 
@@ -23,6 +27,7 @@ def increment():
     try:
         if inc:
             delay += float(inc)
+        print(delay)
         time.sleep(delay)
         if ra and count >= int(ra):
             delay = 0
