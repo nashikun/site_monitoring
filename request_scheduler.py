@@ -13,7 +13,7 @@ class RequestScheduler(Thread):
     :param string url: the url to make requests to.
     :param float interval: the interval between requests
     :param timeout: the time to wait before considering that the response timed-out.
-    :ivar fixed_size_queue.FixedSizeQueue results: stores the request responses.
+    :ivar fixed_size.FixedSizeQueue results: stores the request responses.
     """
 
     def __init__(self, interval, url, timeout):

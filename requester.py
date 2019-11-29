@@ -20,7 +20,7 @@ class Requester(Thread):
 
     def run(self):
         """
-        Runs the :class: Requester and adds the result to the queue before exiting.
+        Runs the :class:`Requester` and adds the result to the queue before exiting.
         If connection to the site fails, the status code is 503
         If the connection succeeds but times out, the status code is 408
 

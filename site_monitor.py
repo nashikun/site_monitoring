@@ -2,6 +2,7 @@ from threading import Thread, Semaphore
 from request_scheduler import RequestScheduler
 import time
 from collections import Counter
+from operator import itemgetter
 
 
 class SiteMonitor(Thread):
@@ -129,15 +130,16 @@ class SiteMonitor(Thread):
 
     def read_metrics(self):
         """
-        Returns the unread metrics and marks them as read.
+        Returns the unread metrics and marks them as read. The returned metrics are sorted for logging.
 
-        :return: dict
+        :return: list
         """
         self.metrics_sem.acquire()
-        metrics = {}
+        metrics_dict = {}
         for k in [10, 60, 120]:
             if not self.is_read[k]:
-                metrics[k] = self.metrics[k]
+                metrics_dict[k] = self.metrics[k]
                 self.is_read[k] = True
         self.metrics_sem.release()
+        metrics = sorted(metrics_dict.items(), key=lambda x: x[1]['time'])
         return metrics

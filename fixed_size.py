@@ -19,12 +19,13 @@ class FixedSizeQueue:
     def add(self, e):
         """
         adds an element to the queue, while keeping it increasing with respect to **key**
-        :param e: the element to add to the queue
-
-        :note: A binary heap might have been better for insertion, but I opted for a regular
+        :note:
+        A binary heap might have been better for insertion, but I opted for a regular
         list as heaps mess up the order of the elements, and we need it
         Additionally the items to be added should be much in order
         most of the time so very little comparisons are done
+
+        :param e: the element to add to the queue
 
         """
         self.sem.acquire()
@@ -43,10 +44,11 @@ class FixedSizeQueue:
 
     def get_slice(self, min_value, max_value):
         """
-        gets the list of all values in lust whose **key** value is between **min_value** and **max_value**
-        :param int min_value:
-        :param int max_value:
-        :return:
+        gets the list of all values in lust whose **key** value is between **min_value** and **max_value**.
+
+        :param int min_value: the maximum value.
+        :param int max_value: the minimum value.
+        :rtype: list
         """
         if min_value > max_value:
             return []
@@ -65,6 +67,15 @@ class FixedSizeQueue:
         h_slice = self.h[min_slice:max_slice]
         self.sem.release()
         return h_slice
+
+    def __repr__(self):
+        return self.h.__repr__()
+
+    def __len__(self):
+        return self.h.__len__()
+
+    def __getitem__(self, item):
+        return self.h.__getitem__(item)
 
 
 # Partial class of FixedSizeQueue, which basically serves as a List with a fixed size.
