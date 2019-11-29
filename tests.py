@@ -1,6 +1,6 @@
 import unittest
 from collections import Counter
-from fixed_size_queue import FixedSizeQueue
+from fixed_size import FixedSizeQueue
 from operator import itemgetter
 from request_scheduler import RequestScheduler
 from requester import Requester
