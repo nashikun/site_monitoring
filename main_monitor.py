@@ -44,10 +44,11 @@ class MainMonitor:
         while not self.set_stop:
             if time.time() - t > 1:
                 self.update_metrics()
+                t = time.time()
             self.ui.render_screen(self.metrics)
             if self.ui.set_stop:
                 self.stop()
-            time.sleep(0.01)
+            time.sleep(0.005)
 
     def stop(self):
         """
