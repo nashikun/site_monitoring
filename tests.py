@@ -55,16 +55,14 @@ class MyTestCase(unittest.TestCase):
         self.assertListEqual(list(code), [200, 200, 200, 200, 408, 408])
 
     def test_stats(self):
-        monitor = SiteMonitor('http://localhost:4444/unavailable?probability=1', 0.1, 5)
+        monitor = SiteMonitor('probability', 'http://localhost:4444/unavailable?probability=1', 0.1, 5)
         t = time.time()
         monitor.start()
         time.sleep(121)
         monitor.stop()
         time.sleep(5)
-        print(monitor.metrics)
-        print(monitor.availability)
         self.assertAlmostEqual(monitor.unavailable_since, t, 1)
-        self.assertEqual(monitor.availability, 0)
+        self.assertEqual(monitor.metrics[120]['availability'], 0)
         self.assertIsInstance(monitor.metrics, dict)
         self.assertIsInstance(monitor.metrics[10]['codes_count'], Counter)
         self.assertIsInstance(monitor.metrics[60]['codes_count'], Counter)

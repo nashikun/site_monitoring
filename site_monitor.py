@@ -2,6 +2,9 @@ from threading import Thread, Semaphore
 from request_scheduler import RequestScheduler
 import time
 from collections import Counter
+import logging
+
+logger = logging.getLogger()
 
 
 class SiteMonitor(Thread):
@@ -22,11 +25,11 @@ class SiteMonitor(Thread):
     :ivar bool set_stop: whether the monitor has been set to stop.
     """
 
-    def __init__(self, url, interval, timeout):
+    def __init__(self, name, url, interval, timeout):
         super(SiteMonitor, self).__init__()
         self.request_scheduler = RequestScheduler(interval, url, timeout)
+        self.name = name
         self.timeout = timeout
-        self.availability = None
         self.unavailable_since = None
         self.recovered_at = None
         t = time.time()
@@ -48,6 +51,7 @@ class SiteMonitor(Thread):
         Starts monitoring the website. Each 10 seconds, calculate the metrics over the last 10 minutes,
             each minute calculate the metrics over the last hour, and update the availability every two minutes.
         """
+        logger.info(f"Started monitoring {self.name}")
         self.request_scheduler.start()
         while not self.set_stop:
             if time.time() - self.last_updates[10] > 10:
@@ -64,6 +68,7 @@ class SiteMonitor(Thread):
         :param delay: the interval between each two metric updates.
         :param duration: the time window over which to calculate the metrics.
         """
+        logger.info(f"Updated metrics for {self.name} with delay = {delay} and duration = {duration} for {self.name}")
         metrics = self.get_metrics(self.last_updates[delay], duration, delay)
         if metrics:
             _, codes_count, max_elapsed, avg_elapsed = metrics
@@ -78,6 +83,7 @@ class SiteMonitor(Thread):
         """
         calculates the availability and stores it.
         """
+        logger.info(f"Updated availability for {self.name}")
         metrics = self.get_metrics(self.last_updates[120], 120, 120)
         if metrics:
             availability, _, _, _ = metrics
@@ -119,6 +125,7 @@ class SiteMonitor(Thread):
 
         # TODO maybe detect sudden spikes in avg/max response times,
         #  or when max and avg response times are way different, or mean vs avg response time
+        logger.info(f"Retrieved metrics for the last {duration} seconds")
         responses = self.request_scheduler.results.get_slice(end + delay - duration - self.timeout,
                                                              end + delay - self.timeout)
         #  If the user sets the request interval too high, responses could be empty

@@ -1,6 +1,21 @@
 from main_monitor import MainMonitor
 import argparse
 import curses
+import logging
+import os
+from datetime import datetime
+
+logger = logging.getLogger()
+os.makedirs("logfiles", exist_ok=True)
+file_log_handler = logging.FileHandler(
+    "logfiles/logfile {}.log".format(datetime.now().strftime("%d-%m-%Y %Hh%Mm%Ss"))
+)
+
+logger.addHandler(file_log_handler)
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_log_handler.setFormatter(formatter)
 
 
 def get_sites(file_path):
@@ -23,6 +38,7 @@ def get_sites(file_path):
 
 
 if __name__ == '__main__':
+    logger.info("Program started")
     parser = argparse.ArgumentParser(usage='A program to monitor websites uptime and response time.')
     parser.add_argument("-f", "--file", type=str, help="The path to the input file.", required=True)
     parser.add_argument("-l", "--logs", type=str, help="The path to store the logs in.")
@@ -34,5 +50,6 @@ if __name__ == '__main__':
         logs_path = './logs'
     else:
         logs_path = args.logs
+    logger.info("Main Monitorer created")
     mon = MainMonitor(sites, logs_path)
     curses.wrapper(mon.start)
