@@ -2,7 +2,6 @@ from threading import Thread, Semaphore
 from request_scheduler import RequestScheduler
 import time
 from collections import Counter
-from operator import itemgetter
 
 
 class SiteMonitor(Thread):
@@ -23,7 +22,7 @@ class SiteMonitor(Thread):
     :ivar bool set_stop: whether the monitor has been set to stop.
     """
 
-    def __init__(self, interval, url, timeout):
+    def __init__(self, url, interval, timeout):
         super(SiteMonitor, self).__init__()
         self.request_scheduler = RequestScheduler(interval, url, timeout)
         self.timeout = timeout
@@ -92,11 +91,11 @@ class SiteMonitor(Thread):
             elif availability < 0.8:
                 #  If it has recovered during the previous check
                 if self.recovered_at:
-                    self.unavailable_since = t
+                    self.unavailable_since = t - 120
                     self.recovered_at = None
                 #  If this is the first time it goes down
                 elif not self.unavailable_since:
-                    self.unavailable_since = t
+                    self.unavailable_since = t - 120
             self.last_updates[120] = t
             self.metrics[120] = {'time': t, 'availability': availability}
             if self.unavailable_since:

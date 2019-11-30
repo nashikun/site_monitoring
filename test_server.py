@@ -46,5 +46,18 @@ def unavailable():
         return Response(status=400)
 
 
+@app.route('/changing-unavailability')
+def changing_unavailability():
+    r = random.random()
+    x = (time.time() // 120 % 20)
+    if x >= 10:
+        p = 2 - x / 10
+    else:
+        p = x / 10
+    if r < p:
+        return Response(status=400)
+    return Response(status=200)
+
+
 if __name__ == '__main__':
     app.run('localhost', port=4444)

@@ -5,6 +5,7 @@ import math
 import time
 from datetime import datetime
 import curses
+import os
 
 
 class MainMonitor:
@@ -18,15 +19,18 @@ class MainMonitor:
         contains the last 1000 of each retrieved stat
     """
 
-    def __init__(self, sites):
+    def __init__(self, sites, logs_path="./logs"):
         self.site_monitors = {}
         self.metrics = {}
         self.cum_metrics = {}
         self.set_stop = False
         self.screen = curses.initscr()
+        self.logs_path = logs_path
         for site in sites:
-            self.site_monitors[site] = SiteMonitor(*site)
+            self.site_monitors[site] = SiteMonitor(*site[1:])
             self.cum_metrics[site] = {k: defaultdict(lambda: FixedSizeList(1000)) for k in [10, 60, 120]}
+        if not os.path.isdir(logs_path):
+            os.mkdir(logs_path)
 
     def start(self):
         """
@@ -108,12 +112,13 @@ class MainMonitor:
         :param site: the site data
         :param duration: the delay between two updates of the metric
         :param metric:
-        :return:
         """
         # TODO remove the hash and replace the url by a valid name instead
         #   Delay is the (user defined) delay between two consecutive requests
-        delay, url, _ = site
-        with open(f'./logs/{hash(url)}_{delay}', 'a') as file:
+        name, _, delay, _ = site
+        delay = str(delay).replace('.', '')
+        path = os.path.join(self.logs_path, name + '_' + str(delay) + '.txt')
+        with open(path, 'a') as file:
             t = datetime.utcfromtimestamp(int(metric['time'])).strftime('%Y-%m-%d %H:%M:%S')
             if duration == 120:
                 file.write(f"[{t}] Website availability is {metric['availability']}\n")
@@ -124,7 +129,7 @@ class MainMonitor:
                     rt = datetime.utcfromtimestamp(int(metric['recovered_at'])).strftime('%Y-%m-%d %H:%M:%S')
                     file.write(f"[{t}] Website recovered at {rt}\n")
             else:
-                codes = " ,".join([f"{k} : {v}" for k, v in metric['codes_count'].items()])
+                codes = "{" + " ,".join([f"{k} : {v}" for k, v in metric['codes_count'].items()]) + " }"
                 if duration == 10:
                     wait = 60
                 elif duration == 60:
@@ -136,4 +141,4 @@ class MainMonitor:
                 file.write(
                     f"[{t}] The maximum response time for the last {wait} seconds is {metric['max_elapsed']:10.2f}\n")
                 file.write(
-                    f"[{t}] The response code counts for the last {duration} seconds is {codes}\n")
+                    f"[{t}] The response codes counts for the last {wait} seconds is {codes}\n")

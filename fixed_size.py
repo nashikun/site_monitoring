@@ -80,5 +80,5 @@ class FixedSizeQueue:
 
 # Partial class of FixedSizeQueue, which basically serves as a List with a fixed size.
 # There's one extra comparison over coding it directly, but I opted for code reusability
-# since the performance difference is insignificant.
+# since the performance difference should be insignificant.
 FixedSizeList = partial(FixedSizeQueue, key=lambda _: 1)
