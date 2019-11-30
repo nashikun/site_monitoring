@@ -116,6 +116,9 @@ class SiteMonitor(Thread):
         :param duration: the duration of the window
         :param delay: the delay between two lookups
         """
+
+        # TODO maybe detect sudden spikes in avg/max response times,
+        #  or when max and avg response times are way different, or mean vs avg response time
         responses = self.request_scheduler.results.get_slice(end + delay - duration - self.timeout,
                                                              end + delay - self.timeout)
         #  If the user sets the request interval too high, responses could be empty

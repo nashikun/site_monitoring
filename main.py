@@ -1,5 +1,6 @@
 from main_monitor import MainMonitor
 import argparse
+import curses
 
 
 def get_sites(file_path):
@@ -13,7 +14,7 @@ def get_sites(file_path):
             if name in names:
                 raise Exception('Names should be unique')
             names.add(name)
-            s.append((name, url, float(delay), float(timeout)))
+            s.append((name, url.strip(), float(delay), float(timeout)))
         return s
     except FileNotFoundError:
         raise Exception('Could not find the file at the specified path. Please enter a valid location')
@@ -22,10 +23,16 @@ def get_sites(file_path):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(usage='A program to monitor websites uptime and response time.')
+    parser.add_argument("-f", "--file", type=str, help="The path to the input file.", required=True)
+    parser.add_argument("-l", "--logs", type=str, help="The path to store the logs in.")
     args = parser.parse_args()
-    logs_path = './logs'
-    input_file = './sites.txt'
+    input_file = args.file
     sites = get_sites(input_file)
+    if not args.logs:
+        print('No folder has been specified to save logs. They will be saved at ./logs')
+        logs_path = './logs'
+    else:
+        logs_path = args.logs
     mon = MainMonitor(sites, logs_path)
-    mon.start()
+    curses.wrapper(mon.start)

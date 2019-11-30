@@ -24,7 +24,6 @@ def increment():
     try:
         if inc:
             delay += float(inc)
-        print(delay)
         time.sleep(delay)
         if ra and count >= int(ra):
             delay = 0

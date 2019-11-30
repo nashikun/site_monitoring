@@ -4,7 +4,7 @@ from collections import defaultdict
 import math
 import time
 from datetime import datetime
-import curses
+from UI import UserInterface
 import os
 
 
@@ -24,25 +24,30 @@ class MainMonitor:
         self.metrics = {}
         self.cum_metrics = {}
         self.set_stop = False
-        self.screen = curses.initscr()
         self.logs_path = logs_path
+        self.sites = sites
+        self.ui = None
         for site in sites:
             self.site_monitors[site] = SiteMonitor(*site[1:])
             self.cum_metrics[site] = {k: defaultdict(lambda: FixedSizeList(1000)) for k in [10, 60, 120]}
         if not os.path.isdir(logs_path):
             os.mkdir(logs_path)
 
-    def start(self):
+    def start(self, screen):
         """
         Start monitoring the websites and show the data on the terminal.
         """
+        t = time.time()
+        self.ui = UserInterface(self.sites, screen)
         for monitor in self.site_monitors.values():
             monitor.start()
         while not self.set_stop:
-            self.update_metrics()
-            time.sleep(1)
-
-            # TODO DEBUG LOOOOOOOOOOOOOGS
+            if time.time() - t > 1:
+                self.update_metrics()
+            self.ui.render_screen()
+            if self.ui.set_stop:
+                self.stop()
+            time.sleep(0.01)
 
     def stop(self):
         """
@@ -113,7 +118,6 @@ class MainMonitor:
         :param duration: the delay between two updates of the metric
         :param metric:
         """
-        # TODO remove the hash and replace the url by a valid name instead
         #   Delay is the (user defined) delay between two consecutive requests
         name, _, delay, _ = site
         delay = str(delay).replace('.', '')
@@ -121,7 +125,7 @@ class MainMonitor:
         with open(path, 'a') as file:
             t = datetime.utcfromtimestamp(int(metric['time'])).strftime('%Y-%m-%d %H:%M:%S')
             if duration == 120:
-                file.write(f"[{t}] Website availability is {metric['availability']}\n")
+                file.write(f"[{t}] Website availability is {100 * metric['availability']:10.0f}%\n")
                 if 'unavailable_since' in metric.keys():
                     rt = datetime.utcfromtimestamp(int(metric['unavailable_since'])).strftime('%Y-%m-%d %H:%M:%S')
                     file.write(f"[{t}] Website is unavailable since {rt}\n")
