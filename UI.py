@@ -158,11 +158,10 @@ class UserInterface:
             self.update_site_info(site)
         if self.changed[(2, site)]:
             self.update_plot(site)
-        #  text = self.stored_info[site] + self.stored_plot[(site, 10)]
-        text = self.stored_plot[(site, 10)]
+        text = self.stored_info[site] + self.stored_plot[(site, 10)]
         self.max_cursor = max(len(text) - self.h, 0)
 
-        for i in range(self.cursor, min(self.cursor + self.h, len(text) - 1)):
+        for i in range(self.cursor, min(self.cursor + self.h, len(text))):
             self.screen.addstr(i - self.cursor, 5, text[i])
         self.screen.refresh()
 
@@ -177,8 +176,8 @@ class UserInterface:
             if metrics:
                 min_val = max(metrics)
                 max_val = min(metrics)
-                if len(metrics) < 5 or min_val == max_val:
-                    self.stored_plot[(site, delay)] = self.array_to_plot([0] + metrics, 0, 1, 0.1, 3)
+                if len(metrics) < 2 or min_val == max_val:
+                    self.stored_plot[(site, delay)] = self.array_to_plot([metrics[0]] + metrics, 0, 1, 0.1, 3)
                 else:
                     step = (max_val - min_val) / 10
                     self.stored_plot[(site, delay)] = self.array_to_plot(metrics, min_val, max_val, step, 3)
