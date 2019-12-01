@@ -54,6 +54,8 @@ class MainMonitor:
                         t = time.time()
                     # We could the returned value to add more features, like adding/removing sites to monitor at runtime
                     val = self.ui.update_and_display(metrics)
+                    if val == 'q':
+                        self.stop()
                     time.sleep(0.01)
         except Exception as e:
             self.stop()

@@ -49,6 +49,7 @@ if __name__ == '__main__':
     if not args.logs:
         print('No folder has been specified to save logs. They will be saved at ./logs')
         logs_path = './logs'
+        time.sleep(1)
     else:
         logs_path = args.logs
     logger.info("Main Monitorer created")

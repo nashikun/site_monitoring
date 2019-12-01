@@ -55,6 +55,7 @@ class UserInterface:
         curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
 
     def stop(self):
+        self.set_stop = True
         curses.endwin()
 
     def update_and_display(self, metrics):
@@ -75,7 +76,7 @@ class UserInterface:
                     self.stored_metrics[(site, delay)][k] = v
                     self.cum_metrics[(site, delay)][k].append(v)
         #  Clears the screen and reads key presses
-        self.get_keypress()
+        res = self.get_keypress()
         self.screen.erase()
         # If screen is resized, update the height and width
         if curses.is_term_resized(self.h, self.w):
@@ -89,6 +90,7 @@ class UserInterface:
             self.log_screen()
         else:
             self.site_info()
+        return res
 
     def get_keypress(self):
         """
@@ -101,8 +103,7 @@ class UserInterface:
         elif ch == curses.KEY_DOWN:
             self.cursor = min(self.cursor + 1, self.max_cursor)
         elif ch == ord('q') or ch == ord('Q'):
-            self.set_stop = True
-            curses.endwin()
+            return 'q'
         elif ch == ord('h') or ch == ord('H'):
             self.cursor = 0
             self.current_page = 0
