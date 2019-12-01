@@ -1,5 +1,5 @@
 from threading import Thread, Semaphore
-from request_scheduler import RequestScheduler
+from utils import RequestScheduler
 import time
 from collections import Counter
 import logging

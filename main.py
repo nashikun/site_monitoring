@@ -3,12 +3,13 @@ import argparse
 import curses
 import logging
 import os
-from datetime import datetime
+import time
+from utils import get_local_time
 
 logger = logging.getLogger()
 os.makedirs("logfiles", exist_ok=True)
 file_log_handler = logging.FileHandler(
-    "logfiles/logfile {}.log".format(datetime.now().strftime("%d-%m-%Y %Hh%Mm%Ss"))
+    "logfiles/logfile {}.log".format(get_local_time(time.time()).strftime("%d-%m-%Y %Hh%Mm%Ss"))
 )
 
 logger.addHandler(file_log_handler)

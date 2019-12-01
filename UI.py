@@ -1,7 +1,9 @@
 import curses
 import math
 from collections import defaultdict
-from datetime import datetime
+from operator import itemgetter
+
+from utils import get_local_time
 import logging
 
 logger = logging.getLogger()
@@ -174,6 +176,7 @@ class UserInterface:
         for delay in [10, 60, 120]:
             max_size = 10
             metrics = self.cum_metrics[(site, delay)]['max_elapsed'][-max_size:]
+            timestamps = self.cum_metrics[(site, delay)]['time'][-max_size:]
             n = len(metrics)
             if n:
                 max_val = max(metrics)
@@ -184,22 +187,30 @@ class UserInterface:
                     repeats = 3
                 if n < 2 or min_val == max_val:
                     min_val = 0
-                    max_val = 1
-                    step = 0.1
+                    step = max_val / 10
                 else:
                     step = (max_val - min_val) / 10
                 plot = self.array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
-                n = len(plot)
+                m = len(plot)
                 if delay == 120:
                     plot.append(" " * 9 + "_" * (3 * max_size))
-                    for i in range(n - 1):
-                        plot[i] = f"{100 * (min_val + (n - 1 - i) * step) :0.0f} %  |" + plot[i]
+                    for i in range(m - 1):
+                        plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :0.0f} %  |" + plot[i]
                 else:
                     plot.append(" " * 9 + "_" * (3 * max_size))
-                    for i in range(n):
-                        plot[i] = f"{int(1000 * (min_val + (n - 1 - i) * step)) :04d} ms |" + plot[i]
+                    for i in range(m):
+                        plot[i] = f"{int(1000 * (min_val + (m - 1 - i) * step)) :04d} ms |" + plot[i]
+                if n == 1:
+                    time_axis = " " * (5 + 3 * max_size) + get_local_time(timestamps[0]).strftime('%H:%M:%S')
+                elif n == 2:
+                    time_axis = " " * (2 + 3 * max_size // 2) + get_local_time(timestamps[0]).strftime(
+                        '%H:%M:%S') + " " * (3 * max_size // 2 - 2) + get_local_time(timestamps[-1]).strftime(
+                        '%H:%M:%S')
+                else:
+                    time_axis = "   " + (" " * (3 + max_size // 2)).join(
+                        [get_local_time(timestamps[idx]).strftime('%H:%M:%S') for idx in [0, n // 2, -1]])
+                plot.append(time_axis)
                 self.stored_plot[(site, delay)] = plot
-
         self.changed[(2, site)] = False
 
     def update_site_info(self, site):
@@ -225,10 +236,10 @@ class UserInterface:
         unavailable_since = data['unavailable_since']
         recovered_at = data['recovered_at']
         if unavailable_since:
-            t = datetime.utcfromtimestamp(int(data['unavailable_since'])).strftime('%Y-%m-%d %H:%M:%S')
+            t = get_local_time(data['unavailable_since']).strftime('%Y-%m-%d %H:%M:%S')
             text.append(f"    Website is down since : {t}"),
         elif recovered_at:
-            t = datetime.utcfromtimestamp(int(data['recovered_at'])).strftime('%Y-%m-%d %H:%M:%S')
+            t = get_local_time(data['recovered_at']).strftime('%Y-%m-%d %H:%M:%S')
             text.append(f"    Website recovered at  : {t}", ),
 
         #   The stats over the last 10 minutes

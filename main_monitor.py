@@ -1,7 +1,8 @@
 from site_monitor import SiteMonitor
 import time
-from datetime import datetime
+
 from UI import UserInterface
+from utils import get_local_time
 import os
 import logging
 
@@ -82,14 +83,14 @@ class MainMonitor:
         delay = str(delay).replace('.', '')
         path = os.path.join(self.logs_path, name + '_' + str(delay) + '.txt')
         with open(path, 'a') as file:
-            t = datetime.utcfromtimestamp(int(metric['time'])).strftime('%Y-%m-%d %H:%M:%S')
+            t = get_local_time(metric['time']).strftime('%Y-%m-%d %H:%M:%S')
             if duration == 120:
                 file.write(f"[{t}] Website availability is {100 * metric['availability']:10.0f}%\n")
                 if 'unavailable_since' in metric.keys():
-                    rt = datetime.utcfromtimestamp(int(metric['unavailable_since'])).strftime('%Y-%m-%d %H:%M:%S')
+                    rt = get_local_time(metric['unavailable_since']).strftime('%Y-%m-%d %H:%M:%S')
                     file.write(f"[{t}] Website is unavailable since {rt}\n")
                 elif 'recovered_at' in metric.keys():
-                    rt = datetime.utcfromtimestamp(int(metric['recovered_at'])).strftime('%Y-%m-%d %H:%M:%S')
+                    rt = get_local_time(metric['recovered_at']).strftime('%Y-%m-%d %H:%M:%S')
                     file.write(f"[{t}] Website recovered at {rt}\n")
             else:
                 codes = "{" + " ,".join([f"{k} : {v}" for k, v in metric['codes_count'].items()]) + " }"

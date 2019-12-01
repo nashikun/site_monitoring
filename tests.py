@@ -2,8 +2,7 @@ import unittest
 from collections import Counter
 from fixed_size import FixedSizeQueue
 from operator import itemgetter
-from request_scheduler import RequestScheduler
-from requester import Requester
+from utils import RequestScheduler, Requester
 from site_monitor import SiteMonitor
 import time
 
