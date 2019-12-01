@@ -2,23 +2,67 @@ from tzlocal import get_localzone
 from datetime import datetime
 import time
 import requests
+import math
 from threading import Thread
 from fixed_size import FixedSizeQueue
 from operator import itemgetter
 
-local_tz = get_localzone()
 """
 This module is for the different simple reusable classes and functions 
 """
 
+local_tz = get_localzone()
+
 
 def get_local_time(timestamp):
     """
-    Converts time from unix time to a :class:`datetime.datetime` object repreesnting time in the current time-zone
+    Converts time from unix time to a :class:`datetime` object repreesnting time in the current time-zone
     :param timestamp: the unix time stamp
     :return: the time in the current timezone
     """
     return local_tz.localize(datetime.fromtimestamp(timestamp))
+
+
+def array_to_plot(array, min_val, max_val, step, repeats):
+    """
+    Draws an input array in ascii
+
+    :param list array: the array to plot
+    :param int min_val: the minimum value to plot. Any lower value will be clamped
+    :param int max_val: the maximum value to plot. Any higher value will be clamped
+    :param float step: the difference between 2 different levels in the plot.
+    :param int repeats: The length of each character on the x-axis
+    :return: A list containing each line as a string.
+    :rtype: list
+    """
+    m = len(array)
+    n = math.ceil((max_val - min_val) / step + 1)
+    # The characters used to draw our plot
+    chars = {
+        0: '#' * repeats,
+        1: '|' + ' ' * (repeats - 1),
+        2: '|' + '_' * (repeats - 1),
+        3: '_' * repeats,
+        4: ' ' + '_' * (repeats - 1)
+    }
+    # initial value for b
+    b = min(max(round((array[0] - min_val) / step), 0), n)
+    plot = [[' ' * repeats for _ in range(m)] for _ in range(n)]
+    for i in range(m - 1):
+        # counts the number of characters we should draw to get to the next value,
+        # then clamps it not to exceed the upper edge
+        a = b
+        b = min(max(round((array[i + 1] - min_val) / step), 0), n)
+        start, end = sorted((a, b))
+        for j in range(start, end):
+            plot[n - 1 - j][i] = chars[1]
+        if plot[n - 1 - b][i] == chars[1]:
+            plot[n - 1 - b][i] = chars[2]
+        elif a == b:
+            plot[n - 1 - b][i] = chars[3]
+        else:
+            plot[n - 1 - b][i] = chars[4]
+    return [''.join(row) for row in plot]
 
 
 class Requester(Thread):

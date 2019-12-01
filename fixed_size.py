@@ -8,6 +8,7 @@ class FixedSizeQueue:
     :param int capacity: the maximum number of elements kept in the queue
     :param key: the function to use to compare the elements
     :ivar sem: a semaphore to make the queue multi-thread safe
+    :ivar list h: the inner list to store elements
     """
 
     def __init__(self, capacity, key):
@@ -19,11 +20,11 @@ class FixedSizeQueue:
     def add(self, e):
         """
         adds an element to the queue, while keeping it increasing with respect to **key**
-        :note:
-        A binary heap might have been better for insertion, but I opted for a regular
-        list as heaps mess up the order of the elements, and we need it
-        Additionally the items to be added should be much in order
-        most of the time so very little comparisons are done
+
+        :note: A binary heap might have been better for insertion, but I opted for a regular
+            list as heaps mess up the order of the elements, and we need it.
+            Additionally the items to be added should be pretty much in order
+            most of the time so very little comparisons are done
 
         :param e: the element to add to the queue
 

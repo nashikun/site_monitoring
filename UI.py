@@ -1,9 +1,6 @@
 import curses
-import math
 from collections import defaultdict
-from operator import itemgetter
-
-from utils import get_local_time
+from utils import get_local_time, array_to_plot
 import logging
 
 logger = logging.getLogger()
@@ -55,6 +52,7 @@ class UserInterface:
     def update_and_display(self, metrics):
         """
         Updates the UI's data and renders the screen
+
         :param metrics:
         """
         for site, metric in metrics.items():
@@ -66,7 +64,10 @@ class UserInterface:
                 self.stored_metrics[(site, delay)]['recovered_at'] = None
                 for k, v in values.items():
                     self.stored_metrics[(site, delay)][k] = v
-                    self.cum_metrics[(site, delay)][k].append(v)
+                    if isinstance(v, float):
+                        self.cum_metrics[(site, delay)][k].append(round(v, 3))
+                    else:
+                        self.cum_metrics[(site, delay)][k].append(v)
         #  Clears the screen and reads key presses
         self.get_keypress()
         self.screen.erase()
@@ -84,6 +85,7 @@ class UserInterface:
     def get_keypress(self):
         """
         Reads the user input and initiates the right actions
+        
         """
         ch = self.screen.getch()
         if ch == curses.KEY_UP:
@@ -104,11 +106,29 @@ class UserInterface:
     def welcome_screen(self):
         """
         Renders the screen for the main menu
+        The text is as follow:
+
+        .. aafig::
+            :textual:
+
+                 ________________
+                |                |
+                |                |
+                | Site Monitorer |
+                |                |
+                |________________|
+
+        Please choose an option:
+
+        |  0001 - Summary
+        |  0002 - site 1
+        |  0003 - site 2
+
         """
         #  If this screen has been changed (as in a new website has been added), recalculate the string
         if self.changed[0]:
-            text = [" ________________", "|                |", "|                |", "| Site Monitorer |",
-                    "|                |", "|________________|", "", "Please choose an option:", "0001 - Summary"]
+            text = [" ________________", "              |", "              |", "| Site Monitorer |",
+                    "              |", "|________________|", "", "Please choose an option:", "0001 - Summary"]
             text.extend([f"{idx + 2:04d} - {site[0].upper()}" for idx, site in enumerate(self.sites)])
             self.changed[0] = False
             self.stored_info[0] = text
@@ -133,7 +153,22 @@ class UserInterface:
 
     def summary_screen(self):
         """
-        Renders the summary screen
+        Renders the summary screen.
+        The layout is as follows:
+
+        .. aafig::
+            :textual:
+
+            site 1 info block
+            _________________________
+
+            site 2 info block
+            _________________________
+
+            site 3 info block
+            _________________________
+
+
         """
         separator = "_" * (self.w - 10)
         full_text = []
@@ -153,16 +188,25 @@ class UserInterface:
 
     def site_info(self):
         """
-        Renders the infos screen
+        Renders the infos screen.
         """
         site = self.sites[self.current_page - 2]
         if self.changed[(1, site)]:
             self.update_site_info(site)
         if self.changed[(2, site)]:
             self.update_plot(site)
-        text = self.stored_info[site] + self.stored_plot[(site, 10)]
+        text = self.stored_info[site][:]
+        if self.stored_plot[(site, 10)]:
+            text.extend(["", "", "The maximum response time over the last 60 s", "", *self.stored_plot[(site, 10)][0],
+                         "", "The average response time over the last 60 s", "", *self.stored_plot[(site, 10)][1], ""])
+        if self.stored_plot[(site, 60)]:
+            text.extend(
+                ["", "", "The maximum response time over the last 60 min", "", *self.stored_plot[(site, 60)][0],
+                 "", "The average response time over the last 60 min", "", *self.stored_plot[(site, 60)][1], ""])
+        if self.stored_plot[(site, 120)]:
+            text.extend(
+                ["", "", "The availability over the last 120 min", "", self.stored_plot[(site, 120)]][0])
         self.max_cursor = max(len(text) - self.h, 0)
-
         for i in range(self.cursor, min(self.cursor + self.h, len(text))):
             self.screen.addstr(i - self.cursor, 5, text[i])
         self.screen.refresh()
@@ -175,47 +219,45 @@ class UserInterface:
         """
         for delay in [10, 60, 120]:
             max_size = 10
-            metrics = self.cum_metrics[(site, delay)]['max_elapsed'][-max_size:]
             timestamps = self.cum_metrics[(site, delay)]['time'][-max_size:]
-            n = len(metrics)
-            if n:
-                max_val = max(metrics)
-                min_val = min(metrics)
-                if n < max_size:
-                    repeats = round(3 * max_size / n)
-                else:
-                    repeats = 3
-                if n < 2 or min_val == max_val:
-                    min_val = 0
-                    step = max_val / 10
-                else:
-                    step = (max_val - min_val) / 10
-                plot = self.array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
-                m = len(plot)
+            if timestamps:
                 if delay == 120:
-                    plot.append(" " * 9 + "_" * (3 * max_size))
-                    for i in range(m - 1):
-                        plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :0.0f} %  |" + plot[i]
+                    metrics = self.cum_metrics[(site, delay)]['availability'][-max_size:]
+                    self.stored_plot[(site, 120)] = [self.get_plot(timestamps, metrics, delay, max_size)]
                 else:
-                    plot.append(" " * 9 + "_" * (3 * max_size))
-                    for i in range(m):
-                        plot[i] = f"{int(1000 * (min_val + (m - 1 - i) * step)) :04d} ms |" + plot[i]
-                if n == 1:
-                    time_axis = " " * (5 + 3 * max_size) + get_local_time(timestamps[0]).strftime('%H:%M:%S')
-                elif n == 2:
-                    time_axis = " " * (2 + 3 * max_size // 2) + get_local_time(timestamps[0]).strftime(
-                        '%H:%M:%S') + " " * (3 * max_size // 2 - 2) + get_local_time(timestamps[-1]).strftime(
-                        '%H:%M:%S')
-                else:
-                    time_axis = "   " + (" " * (3 + max_size // 2)).join(
-                        [get_local_time(timestamps[idx]).strftime('%H:%M:%S') for idx in [0, n // 2, -1]])
-                plot.append(time_axis)
-                self.stored_plot[(site, delay)] = plot
+                    self.stored_plot[(site, delay)] = []
+                    for stat in ['max_elapsed', 'avg_elapsed']:
+                        metrics = self.cum_metrics[(site, delay)][stat][-max_size:]
+                        self.stored_plot[(site, delay)].append(self.get_plot(timestamps, metrics, delay, max_size))
+
         self.changed[(2, site)] = False
 
     def update_site_info(self, site):
         """
-        Updates the info string stored in memory
+        Updates the info string stored in memory.
+        The layout is as follows:
+
+        .. aafig::
+
+            `Website:`
+            `Pinged every :`
+            `Over the last 2 mins:`
+               `Availability                    : --,--%`
+               `Website is down since           : ------------`
+               `Website is is back online since : ------------`
+            `Over the last 10 mins:`
+               `Average Response Time : -----`
+               `Maximum Response Time : -----`
+               `Response Code Count:`
+                    `--- : -----`
+                    `--- : -----`
+                    `--- : -----`
+            `Over the last 60 mins:`
+               `Average Response Time : -----`
+               `Maximum Response Time : -----`
+               `Response Code Count:`
+                    `--- : -----`
+                    `--- : -----`
 
         :param site: the site to update
         """
@@ -270,47 +312,43 @@ class UserInterface:
         self.stored_info[site] = text
         self.changed[(1, site)] = False
 
-    @staticmethod
-    def array_to_plot(array, min_val, max_val, step, repeats):
-        """
-        Draws an input array in ascii
-
-        :param list array: the array to plot
-        :param int min_val: the minimum value to plot. Any lower value will be clamped
-        :param int max_val: the maximum value to plot. Any higher value will be clamped
-        :param float step: the difference between 2 different levels in the plot.
-        :param int repeats: The length of each character on the x-axis
-        :return: A list containing each line as a string.
-        :rtype: list
-        """
-        m = len(array)
-        n = math.ceil((max_val - min_val) / step + 1)
-        # The characters used to draw our plot
-        chars = {
-            0: '#' * repeats,
-            1: '|' + ' ' * (repeats - 1),
-            2: '|' + '_' * (repeats - 1),
-            3: '_' * repeats,
-            4: ' ' + '_' * (repeats - 1)
-        }
-        # initial value for b
-        b = min(max(round((array[0] - min_val) / step), 0), n)
-        plot = [[' ' * repeats for _ in range(m)] for _ in range(n)]
-        for i in range(m - 1):
-            # counts the number of characters we should draw to get to the next value,
-            # then clamps it not to exceed the upper edge
-            a = b
-            b = min(max(round((array[i + 1] - min_val) / step), 0), n)
-            start, end = sorted((a, b))
-            for j in range(start, end):
-                plot[n - 1 - j][i] = chars[1]
-            if plot[n - 1 - b][i] == chars[1]:
-                plot[n - 1 - b][i] = chars[2]
-            elif a == b:
-                plot[n - 1 - b][i] = chars[3]
-            else:
-                plot[n - 1 - b][i] = chars[4]
-        return [''.join(row) for row in plot]
+    def get_plot(self, timestamps, metrics, delay, max_size):
+        n = len(metrics)
+        max_val = max(metrics)
+        min_val = min(metrics)
+        if n < max_size:
+            repeats = round(3 * max_size / n)
+        else:
+            repeats = 3
+        if n < 2 or min_val == max_val:
+            min_val = 0
+            if not max_val:
+                max_val = 1
+            step = max_val / 10
+        else:
+            step = (max_val - min_val) / 10
+        plot = array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
+        m = len(plot)
+        if delay == 120:
+            plot.append(" " * 9 + "_" * (3 * max_size))
+            for i in range(m - 1):
+                plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :0.0f} %  |" + plot[i]
+        else:
+            plot.append(" " * 9 + "_" * (3 * max_size))
+            for i in range(m):
+                plot[i] = f"{int(1000 * (min_val + (m - 1 - i) * step)) :04d} ms |" + plot[i]
+        if n == 1:
+            time_axis = " " * (5 + 3 * max_size) + get_local_time(timestamps[0]).strftime('%H:%M:%S')
+        elif n == 2:
+            time_axis = " " * (2 + 3 * max_size // 2) + get_local_time(timestamps[0]).strftime(
+                '%H:%M:%S') + " " * (3 * max_size // 2 - 2) + get_local_time(timestamps[-1]).strftime(
+                '%H:%M:%S')
+        else:
+            time_axis = "   " + (" " * (3 + max_size // 2)).join(
+                [get_local_time(timestamps[idx]).strftime('%H:%M:%S') for idx in [0, n // 2, -1]])
+        plot.append(time_axis)
+        return plot
 
 # TODO Add a semaphore or something to protect access to data
 #   Add scrolling to the main menu
+#   for some reason response time can be bigger than timeout? gotta look into this

@@ -14,7 +14,7 @@ class MainMonitor:
     The class that monitors the different websites, formats the metrics and outputs them to screen.
 
     :param list sites: the list of websites to monitor. Each element is of the format **(interval, utl, timeout)**
-    :ivar dict site_monitors: the dict containing the different websites and their :class:``site_monitor.SiteMonitor`
+    :ivar dict site_monitors: the dict containing the different websites and their :class:`site_monitor.SiteMonitor`
     :ivar dict metrics: the latest metrics retrieved for each website, sorted by time
         contains the last 1000 of each retrieved stat
     """
@@ -73,6 +73,7 @@ class MainMonitor:
 
     def log(self, site, duration, metric):
         """
+        Logs the metric in the appropriate file after formatting it
 
         :param site: the site data
         :param duration: the delay between two updates of the metric

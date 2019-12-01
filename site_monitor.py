@@ -9,7 +9,7 @@ logger = logging.getLogger()
 
 class SiteMonitor(Thread):
     """
-    The class to get relevant metrics over time from an url.`
+    The class to get relevant metrics over time from an url.
     The methods have been implemented here instead of in :class:`request_scheduler.RequestScheduler` to
     avoid delaying the requests made periodically.
 
@@ -65,6 +65,7 @@ class SiteMonitor(Thread):
     def update_metrics(self, delay, duration):
         """
         Retrieves the metrics and stores them.
+
         :param delay: the interval between each two metric updates.
         :param duration: the time window over which to calculate the metrics.
         """
