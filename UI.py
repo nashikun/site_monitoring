@@ -171,16 +171,35 @@ class UserInterface:
 
         :param site: the site to update
         """
-        for delay in [10, 60]:
-            metrics = self.cum_metrics[(site, delay)]['max_elapsed']
-            if metrics:
-                min_val = max(metrics)
-                max_val = min(metrics)
-                if len(metrics) < 2 or min_val == max_val:
-                    self.stored_plot[(site, delay)] = self.array_to_plot([metrics[0]] + metrics, 0, 1, 0.1, 3)
+        for delay in [10, 60, 120]:
+            max_size = 10
+            metrics = self.cum_metrics[(site, delay)]['max_elapsed'][-max_size:]
+            n = len(metrics)
+            if n:
+                max_val = max(metrics)
+                min_val = min(metrics)
+                if n < max_size:
+                    repeats = round(3 * max_size / n)
+                else:
+                    repeats = 3
+                if n < 2 or min_val == max_val:
+                    min_val = 0
+                    max_val = 1
+                    step = 0.1
                 else:
                     step = (max_val - min_val) / 10
-                    self.stored_plot[(site, delay)] = self.array_to_plot(metrics, min_val, max_val, step, 3)
+                plot = self.array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
+                n = len(plot)
+                if delay == 120:
+                    plot.append(" " * 9 + "_" * (3 * max_size))
+                    for i in range(n - 1):
+                        plot[i] = f"{100 * (min_val + (n - 1 - i) * step) :0.0f} %  |" + plot[i]
+                else:
+                    plot.append(" " * 9 + "_" * (3 * max_size))
+                    for i in range(n):
+                        plot[i] = f"{int(1000 * (min_val + (n - 1 - i) * step)) :04d} ms |" + plot[i]
+                self.stored_plot[(site, delay)] = plot
+
         self.changed[(2, site)] = False
 
     def update_site_info(self, site):
@@ -189,6 +208,9 @@ class UserInterface:
 
         :param site: the site to update
         """
+        # This is very unreadable. I just wrote a pattern in text editor and filled up the blanks as appropriate.
+        # Not sure if there is a better way to do it
+
         text = []
         # The header
         text.extend([f"Website : {site[0]}", "", f"Pinged every : {site[2]:10.2f} seconds", "",
