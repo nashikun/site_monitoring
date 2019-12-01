@@ -45,6 +45,7 @@ class SiteMonitor(Thread):
         """
         self.request_scheduler.stop()
         self.set_stop = True
+        logger.info(f"Monitor for {self.name} set to stop")
 
     def run(self):
         """

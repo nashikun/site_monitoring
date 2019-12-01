@@ -127,9 +127,9 @@ class UserInterface:
         """
         #  If this screen has been changed (as in a new website has been added), recalculate the string
         if self.changed[0]:
-            text = [" ________________", "              |", "              |", "| Site Monitorer |",
-                    "              |", "|________________|", "", "Please choose an option:", "0001 - Summary"]
-            text.extend([f"{idx + 2:04d} - {site[0].upper()}" for idx, site in enumerate(self.sites)])
+            text = [" ________________", "|                |", "|                |", "| Site Monitorer |",
+                    "|                |", "|________________|", "", "Please choose an option:", "0001 - Summary"]
+            text.extend([f"{idx + 2:04d} - {site[0]}" for idx, site in enumerate(self.sites)])
             self.changed[0] = False
             self.stored_info[0] = text
 
@@ -205,7 +205,7 @@ class UserInterface:
                  "", "The average response time over the last 60 min", "", *self.stored_plot[(site, 60)][1], ""])
         if self.stored_plot[(site, 120)]:
             text.extend(
-                ["", "", "The availability over the last 120 min", "", self.stored_plot[(site, 120)]][0])
+                ["", "", "The availability evolution:", "", *self.stored_plot[(site, 120)][0]])
         self.max_cursor = max(len(text) - self.h, 0)
         for i in range(self.cursor, min(self.cursor + self.h, len(text))):
             self.screen.addstr(i - self.cursor, 5, text[i])
@@ -223,12 +223,12 @@ class UserInterface:
             if timestamps:
                 if delay == 120:
                     metrics = self.cum_metrics[(site, delay)]['availability'][-max_size:]
-                    self.stored_plot[(site, 120)] = [self.get_plot(timestamps, metrics, delay, max_size)]
+                    self.stored_plot[(site, 120)] = [self.get_plot(timestamps, metrics, True, max_size)]
                 else:
                     self.stored_plot[(site, delay)] = []
                     for stat in ['max_elapsed', 'avg_elapsed']:
                         metrics = self.cum_metrics[(site, delay)][stat][-max_size:]
-                        self.stored_plot[(site, delay)].append(self.get_plot(timestamps, metrics, delay, max_size))
+                        self.stored_plot[(site, delay)].append(self.get_plot(timestamps, metrics, False, max_size))
 
         self.changed[(2, site)] = False
 
@@ -240,7 +240,9 @@ class UserInterface:
         .. aafig::
 
             `Website:`
+            `Url : `
             `Pinged every :`
+            `Timeout:`
             `Over the last 2 mins:`
                `Availability                    : --,--%`
                `Website is down since           : ------------`
@@ -266,7 +268,7 @@ class UserInterface:
 
         text = []
         # The header
-        text.extend([f"Website : {site[0]}", "", f"Pinged every : {site[2]:10.2f} seconds", "",
+        text.extend([f"Website : {site[0]}", "", f"Pinged every : {site[2]:10.2f} seconds", f"Url : {site[1]}", f"Timeout : {site[3]}", "",
                      "Over the last 2 minutes   :", ])
         #  The availability stats
         data = self.stored_metrics[(site, 120)]
@@ -312,7 +314,37 @@ class UserInterface:
         self.stored_info[site] = text
         self.changed[(1, site)] = False
 
-    def get_plot(self, timestamps, metrics, delay, max_size):
+    @staticmethod
+    def get_plot(timestamps, metrics, is_availability, max_size):
+        """
+        Transforms an array to an ascii plot that can be shown on screen.
+            For example, the array [6, 8, 16] with timestamps of [13:04:03 ,13:04:13, 13:04:23],
+            a max_size of 10 where the y values represent time is printed as:
+
+        .. aafig::
+
+             `0016 ms` |                     _________
+             `0015 ms` |                    |
+             `0014 ms` |                    |
+             `0013 ms` |                    |
+             `0012 ms` |                    |
+             `0011 ms` |                    |
+             `0010 ms` |                    |
+             `0009 ms` |                    |
+             `0008 ms` |           _________|
+             `0007 ms` |          |
+             `0006 ms` |__________|
+                       |______________________________
+                   13:04:03        13:04:13        13:04:23
+
+        :param list[float] timestamps: the timestamps for each value
+        :param list metrics: the values to plot
+        :param bool is_availability: whether the values should be interpreted as percentages or not,
+            in which case they'll be interpreted as seconds
+        :param max_size: the maximum number of values to plot.
+        :return: the ascii plot where each element represents a line
+        :rtype: list[str]
+        """
         n = len(metrics)
         max_val = max(metrics)
         min_val = min(metrics)
@@ -329,12 +361,12 @@ class UserInterface:
             step = (max_val - min_val) / 10
         plot = array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
         m = len(plot)
-        if delay == 120:
-            plot.append(" " * 9 + "_" * (3 * max_size))
-            for i in range(m - 1):
-                plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :0.0f} %  |" + plot[i]
+        if is_availability:
+            plot.append(" " * 9 + "|" + "_" * (3 * max_size))
+            for i in range(m):
+                plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :03.0f} %    |" + plot[i]
         else:
-            plot.append(" " * 9 + "_" * (3 * max_size))
+            plot.append(" " * 8 + "|" + "_" * (3 * max_size))
             for i in range(m):
                 plot[i] = f"{int(1000 * (min_val + (m - 1 - i) * step)) :04d} ms |" + plot[i]
         if n == 1:

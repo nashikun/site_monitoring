@@ -47,7 +47,6 @@ class MainMonitor:
                 self.update_metrics()
                 metrics = self.metrics
                 t = time.time()
-            logger.error(str(metrics))
             self.ui.update_and_display(metrics)
             if self.ui.set_stop:
                 self.stop()
@@ -60,6 +59,7 @@ class MainMonitor:
         for monitor in self.site_monitors.values():
             monitor.stop()
         self.set_stop = True
+        logger.info("Main Monitorer set to stop")
 
     def update_metrics(self):
         logger.info("Metrics updated")
