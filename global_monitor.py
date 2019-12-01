@@ -1,7 +1,7 @@
 from site_monitor import SiteMonitor, EXCEPTION_RAISED
 import time
 
-from UI import UserInterface
+from user_interface import UserInterface
 from utils import get_local_time
 import os
 import logging
@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger()
 
 
-class MainMonitor:
+class GlobalMonitor:
     """
     The class that monitors the different websites, formats the metrics and outputs them to screen.
 

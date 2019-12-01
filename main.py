@@ -1,10 +1,10 @@
-from main_monitor import MainMonitor
+from global_monitor import GlobalMonitor
 import argparse
 import curses
 import logging
 import os
 import time
-from utils import get_local_time
+from utils import get_local_time, get_sites
 
 logger = logging.getLogger()
 os.makedirs("logfiles", exist_ok=True)
@@ -17,26 +17,6 @@ logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 file_log_handler.setFormatter(formatter)
-
-
-def get_sites(file_path):
-    s = []
-    names = set()
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.read().splitlines()
-        for idx, line in enumerate(lines):
-            name, url, delay, timeout = line.split(',')
-            if name in names:
-                raise Exception('Names should be unique')
-            names.add(name)
-            s.append((name, url.strip(), float(delay), float(timeout)))
-        return s
-    except FileNotFoundError:
-        raise Exception('Could not find the file at the specified path. Please enter a valid location')
-    except (TypeError, ValueError):
-        raise Exception(f"Error at line {idx} of the input file. Format should be 'name, url, delay, timeout'")
-
 
 if __name__ == '__main__':
     logger.info("Program started")
@@ -53,5 +33,5 @@ if __name__ == '__main__':
     else:
         logs_path = args.logs
     logger.info("Main Monitorer created")
-    mon = MainMonitor(sites, logs_path)
+    mon = GlobalMonitor(sites, logs_path)
     curses.wrapper(mon.start)

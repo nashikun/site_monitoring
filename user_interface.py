@@ -138,27 +138,27 @@ class UserInterface:
         #  If this screen has been changed (as in a new website has been added), recalculate the string
         if self.changed[0]:
             text = [" ________________", "|                |", "|                |", "| Site Monitorer |",
-                    "|                |", "|________________|", "", "Please choose an option:", "0001 - Summary",
+                    "|                |", "|________________|", "", "Please choose an option:","", "0001 - Summary",
                     "0002 - Logs"]
             text.extend([f"{idx + 3:04d} - {site[0]}" for idx, site in enumerate(self.sites)])
             self.changed[0] = False
             self.stored_info[0] = text
-
         welcome_message = self.stored_info[0]
-        for idx, line in enumerate(welcome_message):
+        curs = max(self.cursor - self.h + 10, 0)
+        for i in range(curs, min(curs + self.h, len(welcome_message))):
             #  If part of the header
-            if idx < 7:
-                self.screen.addstr(idx, round(self.w / 2) - 8, line)
+            if i < 7:
+                self.screen.addstr(i - curs, round(self.w / 2) - 8, welcome_message[i])
             #   Print the instruction
-            elif idx == 7:
-                self.screen.addstr(idx, 5, line)
+            elif i == 7:
+                self.screen.addstr(i - curs, 5, welcome_message[i])
             #   Print the list
             else:
-                if self.cursor + 8 == idx:
-                    self.screen.addstr(1 + idx, 7, line, curses.color_pair(1))
+                if self.cursor + 9 == i:
+                    self.screen.addstr(i - curs, 7, welcome_message[i], curses.color_pair(1))
                 else:
-                    self.screen.addstr(1 + idx, 7, line)
-        self.max_cursor = len(self.sites) + 1
+                    self.screen.addstr(i - curs, 7, welcome_message[i])
+        self.max_cursor = max(len(self.sites) + 1, 0)
         #  Render
         self.screen.refresh()
 
@@ -441,5 +441,4 @@ class UserInterface:
         return plot
 
 # TODO Add a semaphore or something to protect access to data
-#   Add scrolling to the main menu
 #   for some reason response time can be bigger than timeout? gotta look into this

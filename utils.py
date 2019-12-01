@@ -24,6 +24,25 @@ def get_local_time(timestamp):
     return local_tz.localize(datetime.fromtimestamp(timestamp))
 
 
+def get_sites(file_path):
+    s = []
+    names = set()
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.read().splitlines()
+        for idx, line in enumerate(lines):
+            name, url, delay, timeout = line.split(',')
+            if name in names:
+                raise Exception('Names should be unique')
+            names.add(name)
+            s.append((name, url.strip(), float(delay), float(timeout)))
+        return s
+    except FileNotFoundError:
+        raise Exception('Could not find the file at the specified path. Please enter a valid location')
+    except (TypeError, ValueError):
+        raise Exception(f"Error at line {idx} of the input file. Format should be 'name, url, delay, timeout'")
+
+
 def array_to_plot(array, min_val, max_val, step, repeats):
     """
     Draws an input array in ascii
