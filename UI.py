@@ -205,6 +205,8 @@ class UserInterface:
             self.update_site_info(site)
         if self.changed[(2, site)]:
             self.update_plot(site)
+        if self.changed[(3, site)]:
+            self.update_availability(site)
         text = self.stored_info[site][:]
         if self.stored_plot[(site, 10)]:
             text.extend(["", "", "The maximum response time over the last 60 s", "", *self.stored_plot[(site, 10)][0],
