@@ -64,10 +64,7 @@ class UserInterface:
                 self.stored_metrics[(site, delay)]['recovered_at'] = None
                 for k, v in values.items():
                     self.stored_metrics[(site, delay)][k] = v
-                    if isinstance(v, float):
-                        self.cum_metrics[(site, delay)][k].append(round(v, 3))
-                    else:
-                        self.cum_metrics[(site, delay)][k].append(v)
+                    self.cum_metrics[(site, delay)][k].append(v)
         #  Clears the screen and reads key presses
         self.get_keypress()
         self.screen.erase()
@@ -85,7 +82,7 @@ class UserInterface:
     def get_keypress(self):
         """
         Reads the user input and initiates the right actions
-        
+
         """
         ch = self.screen.getch()
         if ch == curses.KEY_UP:
@@ -121,8 +118,9 @@ class UserInterface:
         Please choose an option:
 
         |  0001 - Summary
-        |  0002 - site 1
-        |  0003 - site 2
+        |  0002 - Logs
+        |  0003 - site 1
+        |  0004 - site 2
 
         """
         #  If this screen has been changed (as in a new website has been added), recalculate the string
@@ -268,7 +266,8 @@ class UserInterface:
 
         text = []
         # The header
-        text.extend([f"Website : {site[0]}", "", f"Pinged every : {site[2]:10.2f} seconds", f"Url : {site[1]}", f"Timeout : {site[3]}", "",
+        text.extend([f"Website : {site[0]}", "", f"Pinged every : {site[2]:10.2f} seconds", f"Url : {site[1]}",
+                     f"Timeout : {site[3]}", "",
                      "Over the last 2 minutes   :", ])
         #  The availability stats
         data = self.stored_metrics[(site, 120)]
@@ -313,6 +312,9 @@ class UserInterface:
             text.extend([f"         {k} : {v}" for k, v in data['codes_count'].items()])
         self.stored_info[site] = text
         self.changed[(1, site)] = False
+
+    def update_log_screen(self, site):
+        pass
 
     @staticmethod
     def get_plot(timestamps, metrics, is_availability, max_size):
@@ -362,13 +364,13 @@ class UserInterface:
         plot = array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
         m = len(plot)
         if is_availability:
-            plot.append(" " * 9 + "|" + "_" * (3 * max_size))
+            plot.append(" " * 11 + "|" + "_" * (3 * max_size))
             for i in range(m):
-                plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :03.0f} %    |" + plot[i]
+                plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :5.1f} %    |" + plot[i]
         else:
-            plot.append(" " * 8 + "|" + "_" * (3 * max_size))
+            plot.append(" " * 10 + "|" + "_" * (3 * max_size))
             for i in range(m):
-                plot[i] = f"{int(1000 * (min_val + (m - 1 - i) * step)) :04d} ms |" + plot[i]
+                plot[i] = f"{(1000 * (min_val + (m - 1 - i) * step)) :6.1f} ms |" + plot[i]
         if n == 1:
             time_axis = " " * (5 + 3 * max_size) + get_local_time(timestamps[0]).strftime('%H:%M:%S')
         elif n == 2:

@@ -28,7 +28,7 @@ class MainMonitor:
         self.sites = sites
         self.ui = None
         for site in sites:
-            self.site_monitors[site] = SiteMonitor(*site)
+            self.site_monitors[site] = SiteMonitor(*site, logs_path)
         if not os.path.isdir(logs_path):
             os.mkdir(logs_path)
 
