@@ -1,5 +1,7 @@
 import curses
 from collections import defaultdict
+from operator import itemgetter
+
 from utils import get_local_time, array_to_plot
 import logging
 
@@ -32,6 +34,7 @@ class UserInterface:
         self.stored_metrics = defaultdict(lambda: defaultdict(lambda: None))
         self.cum_metrics = defaultdict(lambda: defaultdict(list))
         self.changed = defaultdict(lambda: True)
+        self.availability_changes = defaultdict(list)
         self.current_page = 0
         self.cursor = 0
         self.max_cursor = len(sites)
@@ -58,6 +61,7 @@ class UserInterface:
         for site, metric in metrics.items():
             self.changed[(1, site)] = True
             self.changed[(2, site)] = True
+            self.changed[(3, site)] = True
             for delay, values in metric:
                 # This is to avoid having both unavailable_since and recovered_at set at the same time
                 self.stored_metrics[(site, delay)]['unavailable_since'] = None
@@ -76,6 +80,8 @@ class UserInterface:
             self.welcome_screen()
         elif self.current_page == 1:
             self.summary_screen()
+        elif self.current_page == 2:
+            self.log_screen()
         else:
             self.site_info()
 
@@ -126,8 +132,9 @@ class UserInterface:
         #  If this screen has been changed (as in a new website has been added), recalculate the string
         if self.changed[0]:
             text = [" ________________", "|                |", "|                |", "| Site Monitorer |",
-                    "|                |", "|________________|", "", "Please choose an option:", "0001 - Summary"]
-            text.extend([f"{idx + 2:04d} - {site[0]}" for idx, site in enumerate(self.sites)])
+                    "|                |", "|________________|", "", "Please choose an option:", "0001 - Summary",
+                    "0002 - Logs"]
+            text.extend([f"{idx + 3:04d} - {site[0]}" for idx, site in enumerate(self.sites)])
             self.changed[0] = False
             self.stored_info[0] = text
 
@@ -145,7 +152,7 @@ class UserInterface:
                     self.screen.addstr(1 + idx, 7, line, curses.color_pair(1))
                 else:
                     self.screen.addstr(1 + idx, 7, line)
-        self.max_cursor = len(self.sites)
+        self.max_cursor = len(self.sites) + 1
         #  Render
         self.screen.refresh()
 
@@ -188,7 +195,7 @@ class UserInterface:
         """
         Renders the infos screen.
         """
-        site = self.sites[self.current_page - 2]
+        site = self.sites[self.current_page - 3]
         if self.changed[(1, site)]:
             self.update_site_info(site)
         if self.changed[(2, site)]:
@@ -208,6 +215,27 @@ class UserInterface:
         for i in range(self.cursor, min(self.cursor + self.h, len(text))):
             self.screen.addstr(i - self.cursor, 5, text[i])
         self.screen.refresh()
+
+    def log_screen(self):
+        for site in self.sites:
+            if self.changed[(3, site)]:
+                self.update_availability(site)
+        availability = sorted([x for v in self.availability_changes.values() for x in v], key=itemgetter(2))
+        self.max_cursor = max(len(availability) - self.h, 0)
+        if not availability:
+            self.screen.addstr(0, 5, "No website went down.")
+        else:
+            for i in range(self.cursor, min(self.cursor + self.h, len(availability))):
+                site, stat, res = availability[i]
+                if res:
+                    if stat == 'unavailable_since':
+                        self.screen.addstr(i - self.cursor, 5,
+                                           f"""site "{site[0]}" is unavailable since"""
+                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}", curses.COLOR_RED)
+                    else:
+                        self.screen.addstr(i - self.cursor, 5,
+                                           f"""site "{site[0]}" recovered at"""
+                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}", curses.COLOR_GREEN)
 
     def update_plot(self, site):
         """
@@ -230,6 +258,7 @@ class UserInterface:
 
         self.changed[(2, site)] = False
 
+    # noinspection PyTypeChecker
     def update_site_info(self, site):
         """
         Updates the info string stored in memory.
@@ -313,8 +342,12 @@ class UserInterface:
         self.stored_info[site] = text
         self.changed[(1, site)] = False
 
-    def update_log_screen(self, site):
-        pass
+    def update_availability(self, site):
+        for stat in ['unavailable_since', 'recovered_at']:
+            res = self.stored_metrics[(site, 120)][stat]
+            if res and (not self.availability_changes[site] or res != self.availability_changes[site][-1][2]):
+                self.availability_changes[site].append((site, stat, res))
+        self.changed[(3, site)] = False
 
     @staticmethod
     def get_plot(timestamps, metrics, is_availability, max_size):
