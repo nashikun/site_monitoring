@@ -1,4 +1,4 @@
-from site_monitor import SiteMonitor
+from site_monitor import SiteMonitor, EXCEPTION_RAISED
 import time
 
 from UI import UserInterface
@@ -41,21 +41,29 @@ class MainMonitor:
         self.ui = UserInterface(self.sites, screen)
         for monitor in self.site_monitors.values():
             monitor.start()
-        while not self.set_stop:
-            metrics = {}
-            if time.time() - t > 1:
-                self.update_metrics()
-                metrics = self.metrics
-                t = time.time()
-            self.ui.update_and_display(metrics)
-            if self.ui.set_stop:
-                self.stop()
-            time.sleep(0.01)
+        try:
+            while not self.set_stop:
+                # Stops the execution if one of the children thread has an exception
+                if EXCEPTION_RAISED:
+                    self.stop()
+                else:
+                    metrics = {}
+                    if time.time() - t > 1:
+                        self.update_metrics()
+                        metrics = self.metrics
+                        t = time.time()
+                    # We could the returned value to add more features, like adding/removing sites to monitor at runtime
+                    val = self.ui.update_and_display(metrics)
+                    time.sleep(0.01)
+        except Exception as e:
+            self.stop()
+            raise e
 
     def stop(self):
         """
         Stops the monitoring.
         """
+        self.ui.stop()
         for monitor in self.site_monitors.values():
             monitor.stop()
         self.set_stop = True

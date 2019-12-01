@@ -51,6 +51,11 @@ class UserInterface:
         curses.cbreak()
         curses.start_color()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+
+    def stop(self):
+        curses.endwin()
 
     def update_and_display(self, metrics):
         """
@@ -171,7 +176,6 @@ class UserInterface:
             _________________________
 
             site 3 info block
-            _________________________
 
 
         """
@@ -211,6 +215,21 @@ class UserInterface:
         if self.stored_plot[(site, 120)]:
             text.extend(
                 ["", "", "The availability evolution:", "", *self.stored_plot[(site, 120)][0]])
+
+        availability = sorted(self.availability_changes[site], key=itemgetter(2))
+        if not availability:
+            text.append("The website didn't go down.")
+        else:
+            for i in range(self.cursor, min(self.cursor + self.h, len(availability))):
+                site, stat, res = availability[i]
+                if res:
+                    if stat == 'unavailable_since':
+                        text.append(f"""site "{site[0]}" is unavailable since"""
+                                    f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}")
+                    else:
+                        text.append(f"""site "{site[0]}" recovered at"""
+                                    f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}")
+
         self.max_cursor = max(len(text) - self.h, 0)
         for i in range(self.cursor, min(self.cursor + self.h, len(text))):
             self.screen.addstr(i - self.cursor, 5, text[i])
@@ -223,7 +242,7 @@ class UserInterface:
         availability = sorted([x for v in self.availability_changes.values() for x in v], key=itemgetter(2))
         self.max_cursor = max(len(availability) - self.h, 0)
         if not availability:
-            self.screen.addstr(0, 5, "No website went down.")
+            self.screen.addstr(0, 5, "No website went down.", curses.color_pair(2))
         else:
             for i in range(self.cursor, min(self.cursor + self.h, len(availability))):
                 site, stat, res = availability[i]
@@ -231,11 +250,13 @@ class UserInterface:
                     if stat == 'unavailable_since':
                         self.screen.addstr(i - self.cursor, 5,
                                            f"""site "{site[0]}" is unavailable since"""
-                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}", curses.COLOR_RED)
+                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}",
+                                           curses.color_pair(3))
                     else:
                         self.screen.addstr(i - self.cursor, 5,
                                            f"""site "{site[0]}" recovered at"""
-                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}", curses.COLOR_GREEN)
+                                           f" {get_local_time(res).strftime('%Y-%m-%d %H:%M:%S')}",
+                                           curses.color_pair(2))
 
     def update_plot(self, site):
         """

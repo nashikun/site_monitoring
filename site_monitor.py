@@ -1,10 +1,13 @@
+from operator import itemgetter
 from threading import Thread, Semaphore
-from utils import RequestScheduler
+from utils import Requester
 import os
 import time
 from collections import Counter
 import logging
 from fixed_size import FixedSizeQueue
+
+EXCEPTION_RAISED = False
 
 logger = logging.getLogger()
 
@@ -58,17 +61,27 @@ class SiteMonitor(Thread):
             each minute calculate the metrics over the last hour, and update the availability every two minutes.
         """
         logger.info(f"Started monitoring {self.name}")
+        global EXCEPTION_RAISED
         self.request_scheduler.start()
         self.writer.start()
-        while not self.set_stop:
-            t = time.time()
-            if t - self.last_updates[10] > 10:
-                self.update_metrics(10, 600)
-            if t - self.last_updates[60] > 60:
-                self.update_metrics(60, 3600)
-            if t - self.last_updates[120] > 120:
-                self.update_availability()
-            time.sleep(0.01)
+        try:
+            while not self.set_stop:
+                # Stops the execution if an other thread has an exception
+                if EXCEPTION_RAISED:
+                    self.stop()
+                else:
+                    t = time.time()
+                    if t - self.last_updates[10] > 10:
+                        self.update_metrics(10, 600)
+                    if t - self.last_updates[60] > 60:
+                        self.update_metrics(60, 3600)
+                    if t - self.last_updates[120] > 120:
+                        self.update_availability()
+                    time.sleep(0.01)
+        except Exception as e:
+            EXCEPTION_RAISED = True
+            self.stop()
+            raise e
 
     def update_metrics(self, delay, duration):
         """
@@ -177,13 +190,68 @@ class Writer(Thread):
 
     def run(self):
         t = time.time()
-        while not self.set_stop:
-            if time.time() - t > self.duration:
-                responses = self.queue.get_slice(t - self.delay - self.duration, t - self.delay)
-                t = time.time()
-                with open(self.path, 'a') as f:
-                    f.writelines(["%s %s %s\n" % x for x in responses])
-            time.sleep(0.1)
+        global EXCEPTION_RAISED
+        try:
+            while not self.set_stop:
+                if EXCEPTION_RAISED:
+                    self.stop()
+                else:
+                    if time.time() - t > self.duration:
+                        responses = self.queue.get_slice(t - self.delay - self.duration, t - self.delay)
+                        t = time.time()
+                        with open(self.path, 'a') as f:
+                            f.writelines(["%s %s %s\n" % x for x in responses])
+                    time.sleep(0.1)
+        except Exception as e:
+            EXCEPTION_RAISED = True
+            raise e
 
     def stop(self):
+        self.set_stop = True
+
+
+class RequestScheduler(Thread):
+    """
+    This class creates a :class:`requester.Requester` object every *interval* and stores the results in a queue.
+
+    :param string url: the url to make requests to.
+    :param float interval: the interval between requests in seconds
+    :param timeout: the time to wait in seconds before considering that the response timed-out.
+    :ivar fixed_size.FixedSizeQueue results: stores the request responses.
+    """
+
+    def __init__(self, interval, url, timeout):
+        super(RequestScheduler, self).__init__()
+        self.url = url
+        self.interval = interval
+        self.results = FixedSizeQueue(int(600 / interval), key=itemgetter(0))
+        self.timeout = timeout
+        self.set_stop = False
+
+    def run(self):
+        """
+        start making requests every **interval**
+        """
+        t = time.time()
+        global EXCEPTION_RAISED
+        try:
+            while not self.set_stop:
+                if EXCEPTION_RAISED:
+                    self.stop()
+                else:
+                    #   Used this instead of time.sleep(self.interval) to reduce the number of iterations 'lost'
+                    if time.time() - t > self.interval:
+                        req = Requester(self.url, self.results, self.timeout)
+                        req.start()
+                        t = time.time()
+                    time.sleep(self.interval / 1000)
+        except Exception as e:
+            EXCEPTION_RAISED = True
+            self.stop()
+            raise e
+
+    def stop(self):
+        """
+        stop making requests
+        """
         self.set_stop = True
