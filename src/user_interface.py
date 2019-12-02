@@ -1,7 +1,7 @@
 import curses
 from collections import defaultdict
 from operator import itemgetter
-from utils import get_local_time, array_to_plot
+from src.utils import get_local_time, array_to_plot
 import logging
 
 logger = logging.getLogger()

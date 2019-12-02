@@ -1,7 +1,7 @@
 # site monitoring
 
 A program to easily monitor the performance of multiple websites at once on a console.\
-![](http://g.recordit.co/TmUJiAJ6gM.gif)
+![demo](http://g.recordit.co/XvfIa7Fwl0.gif)
 ## Table of contenents
  - [Installation](#installation)
  - [Features](#features)
@@ -29,7 +29,7 @@ In the projet directory, eun
 python -f input_file -l logs_file
 ```
 Where input_file is the file with websites to monitor. Every line of the file should be
-> website_name,url,ping_interval,timeout
+> website_name, url, ping_interval, timeout
 With:
  - website_name: a unique usen defined identifier for each url
  - url: the url to monitor
@@ -37,10 +37,11 @@ With:
  - timeout: the time to wait before a request is considered as timed out and return a 408 error.
 
 Once the website is running, you will find yourself in the main menu. You can navigate using the up and down arrows and enter. You can press *h* any time to return to the main menu.\
-To exit the program, press *q*
+To exit the program, press **q**
 
 ## Testing
 
 ## Documentation
 
 To see a detailed documentation for each module:
+[test](documentation/_build/html/index.html)

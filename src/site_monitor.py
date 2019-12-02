@@ -1,10 +1,10 @@
 from operator import itemgetter
 from threading import Thread, Semaphore
-from utils import Requester
+from src.utils import Requester
 import time
 from collections import Counter
 import logging
-from fixed_size import FixedSizeQueue
+from src.fixed_size import FixedSizeQueue
 
 EXCEPTION_RAISED = False
 

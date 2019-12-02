@@ -1,8 +1,8 @@
 from threading import Thread
-from site_monitor import SiteMonitor, EXCEPTION_RAISED
+from src.site_monitor import SiteMonitor
 import time
-from user_interface import UserInterface
-from utils import get_local_time
+from src.user_interface import UserInterface
+from src.utils import get_local_time
 import os
 import logging
 
@@ -19,7 +19,7 @@ class GlobalMonitor:
         contains the last 1000 of each retrieved stat
     """
 
-    def __init__(self, sites, logs_path="./logs"):
+    def __init__(self, sites, logs_path="./logfiles"):
         self.site_monitors = {}
         self.metrics = {}
         self.cum_metrics = {}
@@ -122,6 +122,7 @@ class Writer(Thread):
     """
     A class to write the detailed stats to disk
     """
+
     def __init__(self, site_monitors, logs_path):
         super().__init__()
 
