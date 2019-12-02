@@ -17,6 +17,7 @@ class UserInterface:
     :ivar defaultdict stored_plot: contains the plot for each pair (site, delay)
     :ivar defaultdict cum_metrics: contains the last few retrieved metrics
     :ivar defaultdict changed: remembers whether a (site, delay) s plot and info have been changed since the last update
+    :ivar defaultdict availability_changes: for each website, stores when it went down or recovered
     :ivar int cursor: the number of the page to render
     :ivar int max_cursor: the maximum value the cursor could have
     :ivar bool set_stop: whether the program should quit
@@ -54,6 +55,9 @@ class UserInterface:
         curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
 
     def stop(self):
+        """
+        Stops the user interface and restores the terminal
+        """
         self.set_stop = True
         curses.endwin()
 
@@ -116,6 +120,8 @@ class UserInterface:
         Renders the screen for the main menu
         The text is as follow:
 
+        .. aafig::
+            :textual:
 
                  ________________
                 |                |
@@ -135,7 +141,7 @@ class UserInterface:
         #  If this screen has been changed (as in a new website has been added), recalculate the string
         if self.changed[0]:
             text = [" ________________", "|                |", "|                |", "| Site Monitorer |",
-                    "|                |", "|________________|", "", "Please choose an option:","", "0001 - Summary",
+                    "|                |", "|________________|", "", "Please choose an option:", "", "0001 - Summary",
                     "0002 - Logs"]
             text.extend([f"{idx + 3:04d} - {site[0]}" for idx, site in enumerate(self.sites)])
             self.changed[0] = False
@@ -167,7 +173,7 @@ class UserInterface:
         .. aafig::
             :textual:
 
-            site 1 info blockpip install sphinxcontrib-aafig
+            site 1 info block
             _________________________
 
             site 2 info block
@@ -197,6 +203,7 @@ class UserInterface:
         """
         Renders the infos screen.
         """
+        # Updates the info
         site = self.sites[self.current_page - 3]
         if self.changed[(1, site)]:
             self.update_site_info(site)
@@ -204,7 +211,9 @@ class UserInterface:
             self.update_plot(site)
         if self.changed[(3, site)]:
             self.update_availability(site)
+        # Add the info text
         text = self.stored_info[site][:]
+        # Add the plots
         if self.stored_plot[(site, 10)]:
             text.extend(["", "", "The maximum response time over the last 60 s", "", *self.stored_plot[(site, 10)][0],
                          "", "The average response time over the last 60 s", "", *self.stored_plot[(site, 10)][1], ""])
@@ -215,13 +224,13 @@ class UserInterface:
         if self.stored_plot[(site, 120)]:
             text.extend(
                 ["", "", "The availability evolution:", "", *self.stored_plot[(site, 120)][0]])
-
+        #  Add the logs
         availability = sorted(self.availability_changes[site], key=itemgetter(2))
         if not availability:
             text.append("The website didn't go down.")
         else:
-            for i in range(self.cursor, min(self.cursor + self.h, len(availability))):
-                site, stat, res = availability[i]
+            for data in availability:
+                site, stat, res = data
                 if res:
                     if stat == 'unavailable_since':
                         text.append(f"""site "{site[0]}" is unavailable since"""
@@ -236,6 +245,9 @@ class UserInterface:
         self.screen.refresh()
 
     def log_screen(self):
+        """
+        Renders the log screen
+        """
         for site in self.sites:
             if self.changed[(3, site)]:
                 self.update_availability(site)
@@ -402,6 +414,7 @@ class UserInterface:
         :rtype: list[str]
         """
         n = len(metrics)
+        #  Get the settings for the plot
         max_val = max(metrics)
         min_val = min(metrics)
         if n < max_size:
@@ -415,12 +428,15 @@ class UserInterface:
             step = max_val / 10
         else:
             step = (max_val - min_val) / 10
+        #  Get the plot
         plot = array_to_plot([metrics[0]] + metrics, min_val, max_val, step, repeats)
         m = len(plot)
+        #   If we're plotting the availability evolution
         if is_availability:
             plot.append(" " * 11 + "|" + "_" * (3 * max_size))
             for i in range(m):
                 plot[i] = f"{100 * (min_val + (m - 1 - i) * step) :5.1f} %    |" + plot[i]
+        #  If we're plotting the response time evolution
         else:
             plot.append(" " * 10 + "|" + "_" * (3 * max_size))
             for i in range(m):

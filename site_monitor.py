@@ -18,6 +18,7 @@ class SiteMonitor(Thread):
     avoid delaying the requests made periodically.
 
     :ivar request_scheduler request_scheduler: the scheduler making requests once per interval.
+    :ivar str name: the website's name
     :ivar float availability: the availability of the website during the last two minutes.
     :ivar Union[float,None] unavailable_since: the unix time of the first time the url became unavailable.
         Is None if the site is available.
@@ -27,6 +28,7 @@ class SiteMonitor(Thread):
     :ivar dict is_read: a dict with booleans representing whether the latest metric
         on each time-frame has been retrieved or not.
     :ivar bool set_stop: whether the monitor has been set to stop.
+    :ivar Semaphore metric_sem: a semaphore to protect read and write
     """
 
     def __init__(self, name, url, interval, timeout):
@@ -158,7 +160,8 @@ class SiteMonitor(Thread):
         """
         Returns the unread metrics and marks them as read. The returned metrics are sorted for logging.
 
-        :return: list
+        :return: the unread metrics, sorted by time
+        :rtype: list
         """
         self.metrics_sem.acquire()
         metrics_dict = {}

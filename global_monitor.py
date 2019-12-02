@@ -36,6 +36,7 @@ class GlobalMonitor:
     def start(self, screen):
         """
         Start monitoring the websites and show the data on the terminal.
+        :param screen: reference to the curses screen
         """
         logger.info("Main Started created")
         t = time.time()
@@ -118,6 +119,9 @@ class GlobalMonitor:
 
 
 class Writer(Thread):
+    """
+    A class to write the detailed stats to disk
+    """
     def __init__(self, site_monitors, logs_path):
         super().__init__()
 

@@ -1,7 +1,7 @@
 # site monitoring
 
-A program to easily monitor the performance of multiple websites at once on a console.\
-\
+A program to easily monitor the performance of multiple websites at once on a console.
+![](http://g.recordit.co/TmUJiAJ6gM.gif)
 ## Table of contenents
  - [Installation](#installation)
  - [Features](#features)

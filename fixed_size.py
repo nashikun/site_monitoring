@@ -1,6 +1,11 @@
 from threading import Semaphore
 from functools import partial
 
+"""
+This module contains the classes that will be used to store data. 
+They both have a limited capacity of items to hold and are multi-thread safe.
+"""
+
 
 class FixedSizeQueue:
     """A fixed size queue where items are kept in ascending order when compared by key.
@@ -79,7 +84,9 @@ class FixedSizeQueue:
         return self.h.__getitem__(item)
 
 
-# Partial class of FixedSizeQueue, which basically serves as a List with a fixed size.
-# There's one extra comparison over coding it directly, but I opted for code reusability
-# since the performance difference should be insignificant.
 FixedSizeList = partial(FixedSizeQueue, key=lambda _: 1)
+"""
+Partial class of FixedSizeQueue, which basically serves as a List with a fixed size.
+There's one extra comparison over coding it directly, but I opted for code reusability
+since the performance difference should be insignificant.
+"""
