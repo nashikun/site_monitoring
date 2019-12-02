@@ -43,5 +43,9 @@ To exit the program, press **q**
 
 ## Documentation
 
-To see a detailed documentation for each module:
-[test](docs/index.html)
+To see a detailed documentation for each module: \
+ - [global_monitor module](docs/global_monitor.html) : Contains **GlobalMonitor** main module that monitors the different websites, formats the metrics and outputs them to screen.
+ - [site_monitor module](docs/site_monitor.html) : Contains **SiteMonitor**, class to get relevant metrics over time from an url. 
+ - [user_interface module](docs/user_interface.html)  : The class that renders everything on screen. 
+ - [fixed_size module](docs/fixed_size.html) : Contains the classes that will be used to store data. 
+ - [utils module](docs/utils.html) : Miscellaneous functions and classes. 
