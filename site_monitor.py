@@ -1,7 +1,6 @@
 from operator import itemgetter
 from threading import Thread, Semaphore
 from utils import Requester
-import os
 import time
 from collections import Counter
 import logging
@@ -30,12 +29,10 @@ class SiteMonitor(Thread):
     :ivar bool set_stop: whether the monitor has been set to stop.
     """
 
-    def __init__(self, name, url, interval, timeout, log_path="./logs"):
+    def __init__(self, name, url, interval, timeout):
         super(SiteMonitor, self).__init__()
         self.request_scheduler = RequestScheduler(interval, url, timeout)
         self.name = name
-        self.writer = Writer(self.request_scheduler.results, timeout, 10,
-                             os.path.join(log_path, self.name + '_raw.txt'))
         self.timeout = timeout
         self.unavailable_since = None
         self.recovered_at = None
@@ -51,7 +48,6 @@ class SiteMonitor(Thread):
         Stops the monitoring.
         """
         self.request_scheduler.stop()
-        self.writer.stop()
         self.set_stop = True
         logger.info(f"Monitor for {self.name} set to stop")
 
@@ -63,7 +59,6 @@ class SiteMonitor(Thread):
         logger.info(f"Started monitoring {self.name}")
         global EXCEPTION_RAISED
         self.request_scheduler.start()
-        self.writer.start()
         try:
             while not self.set_stop:
                 # Stops the execution if an other thread has an exception
@@ -174,40 +169,6 @@ class SiteMonitor(Thread):
         self.metrics_sem.release()
         metrics = sorted(metrics_dict.items(), key=lambda x: x[1]['time'])
         return metrics
-
-
-class Writer(Thread):
-
-    def __init__(self, queue, delay, duration, path):
-        if not isinstance(queue, FixedSizeQueue):
-            raise Exception('invalid queue type')
-        super().__init__()
-        self.queue = queue
-        self.delay = delay
-        self.duration = duration
-        self.path = path
-        self.set_stop = False
-
-    def run(self):
-        t = time.time()
-        global EXCEPTION_RAISED
-        try:
-            while not self.set_stop:
-                if EXCEPTION_RAISED:
-                    self.stop()
-                else:
-                    if time.time() - t > self.duration:
-                        responses = self.queue.get_slice(t - self.delay - self.duration, t - self.delay)
-                        t = time.time()
-                        with open(self.path, 'a') as f:
-                            f.writelines(["%s %s %s\n" % x for x in responses])
-                    time.sleep(0.1)
-        except Exception as e:
-            EXCEPTION_RAISED = True
-            raise e
-
-    def stop(self):
-        self.set_stop = True
 
 
 class RequestScheduler(Thread):

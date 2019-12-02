@@ -4,8 +4,6 @@ import time
 import requests
 import math
 from threading import Thread
-from fixed_size import FixedSizeQueue
-from operator import itemgetter
 
 """
 This module is for the different simple reusable classes and functions 

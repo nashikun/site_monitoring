@@ -1,7 +1,6 @@
 import curses
 from collections import defaultdict
 from operator import itemgetter
-
 from utils import get_local_time, array_to_plot
 import logging
 
@@ -117,8 +116,6 @@ class UserInterface:
         Renders the screen for the main menu
         The text is as follow:
 
-        .. aafig::
-            :textual:
 
                  ________________
                 |                |
@@ -170,7 +167,7 @@ class UserInterface:
         .. aafig::
             :textual:
 
-            site 1 info block
+            site 1 info blockpip install sphinxcontrib-aafig
             _________________________
 
             site 2 info block
@@ -439,6 +436,3 @@ class UserInterface:
                 [get_local_time(timestamps[idx]).strftime('%H:%M:%S') for idx in [0, n // 2, -1]])
         plot.append(time_axis)
         return plot
-
-# TODO Add a semaphore or something to protect access to data
-#   for some reason response time can be bigger than timeout? gotta look into this
