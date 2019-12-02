@@ -1,7 +1,0 @@
-main\_monitor module
-====================
-
-.. automodule:: main_monitor
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -36,14 +36,25 @@ With:
  - ping_interval: the interval between each ping to the url.
  - timeout: the time to wait before a request is considered as timed out and return a 408 error.
 
-Once the website is running, you will find yourself in the main menu. You can navigate using the up and down arrows and enter. You can press *h* any time to return to the main menu.\
+Once the website is running, you will find yourself in the main menu. You can navigate using the up and down arrows and enter. You can press **h** any time to return to the main menu.\
 To exit the program, press **q**
 
 ## Testing
 
+A simple [test server](tests/test_server.py) is present in [tests](tests) to simulate latency and availability.
+\ You can run it using
+```shell
+python tests/test_server.py
+``` 
+Once the test server is up, you can either run the program and check the metrics are coherent, or run [tests.py](tests/tests.py)
+using :
+```
+python -m unittest tests.tests
+```
+
 ## Documentation
 
-To see a detailed documentation for each module: \
+To see a detailed documentation for each module:
  - [global_monitor module](docs/global_monitor.html) : Contains **GlobalMonitor** main module that monitors the different websites, formats the metrics and outputs them to screen.
  - [site_monitor module](docs/site_monitor.html) : Contains **SiteMonitor**, class to get relevant metrics over time from an url. 
  - [user_interface module](docs/user_interface.html)  : The class that renders everything on screen. 
