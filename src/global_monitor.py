@@ -1,5 +1,5 @@
 from threading import Thread
-from src.site_monitor import SiteMonitor
+from src.site_monitor import SiteMonitor, EXCEPTION_RAISED
 import time
 from src.user_interface import UserInterface
 from src.utils import get_local_time

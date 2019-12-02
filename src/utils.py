@@ -25,6 +25,7 @@ def get_local_time(timestamp):
 def get_sites(file_path):
     """
     Reads the sites from an input file and returns the list of websites if no exceptions are raise.
+
     :param file_path: The path to read from
     :return: The list of websites to monitor
     """

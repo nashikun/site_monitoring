@@ -9,7 +9,7 @@ from src.utils import get_local_time, get_sites
 logger = logging.getLogger()
 os.makedirs("logs", exist_ok=True)
 file_log_handler = logging.FileHandler(
-    "logfiles/logfile {}.log".format(get_local_time(time.time()).strftime("%d-%m-%Y %Hh%Mm%Ss"))
+    "logs/logfile {}.log".format(get_local_time(time.time()).strftime("%d-%m-%Y %Hh%Mm%Ss"))
 )
 
 logger.addHandler(file_log_handler)
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     input_file = args.file
     sites = get_sites(input_file)
     if not args.logs:
-        print('No folder has been specified to save logs. They will be saved at ./filelogs')
+        print('No folder has been specified to save logs. They will be saved at ./logfiles')
         logs_path = './logfiles'
         time.sleep(1)
     else:
