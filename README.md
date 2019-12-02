@@ -6,6 +6,7 @@ A program to easily monitor the performance of multiple websites at once on a co
  - [Installation](#installation)
  - [Features](#features)
  - [Usage](#usage)
+ - [Testing](#testing)
  - [Documentation](#documentation)
  
  ## Installation
@@ -33,12 +34,13 @@ With:
  - website_name: a unique usen defined identifier for each url
  - url: the url to monitor
  - ping_interval: the interval between each ping to the url.
- - timeout: the time to wait before a request is considered as timed out and return a 408 error. \
+ - timeout: the time to wait before a request is considered as timed out and return a 408 error.
+
 Once the website is running, you will find yourself in the main menu. You can navigate using the up and down arrows and enter. You can press *h* any time to return to the main menu.\
-To exit the program, press *q* \
+To exit the program, press *q*
+
+## Testing
 
 ## Documentation
 
 To see a detailed documentation for each module:
- [Module1](documentation/module1.html)
-
