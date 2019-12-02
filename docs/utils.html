@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>utils module &#8212; Site Monitorer 03-12-2019 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="user_interface module" href="user_interface.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-utils">
+<span id="utils-module"></span><h1>utils module<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="utils.Requester">
+<em class="property">class </em><code class="sig-prename descclassname">utils.</code><code class="sig-name descname">Requester</code><span class="sig-paren">(</span><em class="sig-param">url</em>, <em class="sig-param">queue</em>, <em class="sig-param">timeout</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.Requester" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">threading.Thread</span></code></p>
+<p>The base class that sends requests and adds relevant data to the queue in the right order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> – the url to make requests to</p></li>
+<li><p><strong>queue</strong> – the queue to which add the gathered data</p></li>
+<li><p><strong>timeout</strong> – the time to wait before considering the request timed-out</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="utils.Requester.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utils.Requester.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the <a class="reference internal" href="#utils.Requester" title="utils.Requester"><code class="xref py py-class docutils literal notranslate"><span class="pre">Requester</span></code></a> and adds the result to the queue before exiting.
+|  If connection to the site fails, the status code is 503
+|  If the connection succeeds but times out, the status code is 408</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.array_to_plot">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">array_to_plot</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">min_val</em>, <em class="sig-param">max_val</em>, <em class="sig-param">step</em>, <em class="sig-param">repeats</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.array_to_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws an input array in ascii</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>list</em>) – the array to plot</p></li>
+<li><p><strong>min_val</strong> (<em>int</em>) – the minimum value to plot. Any lower value will be clamped</p></li>
+<li><p><strong>max_val</strong> (<em>int</em>) – the maximum value to plot. Any higher value will be clamped</p></li>
+<li><p><strong>step</strong> (<em>float</em>) – the difference between 2 different levels in the plot.</p></li>
+<li><p><strong>repeats</strong> (<em>int</em>) – The length of each character on the x-axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list containing each line as a string.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.get_local_time">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">get_local_time</code><span class="sig-paren">(</span><em class="sig-param">timestamp</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_local_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts time from unix time to a <code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code> object representing time in the current time-zone</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – the unix time stamp</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the time in the current timezone</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.get_sites">
+<code class="sig-prename descclassname">utils.</code><code class="sig-name descname">get_sites</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.get_sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the sites from an input file and returns the list of websites if no exceptions are raise.
+:param file_path: The path to read from
+:return: The list of websites to monitor</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Site Monitorer</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">site-monitoring</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fixed_size.html">fixed_size module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="global_monitor.html">global_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">setup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="site_monitor.html">site_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test_server.html">test_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_interface.html">user_interface module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">utils module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">site-monitoring</a><ul>
+      <li>Previous: <a href="user_interface.html" title="previous chapter">user_interface module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Anass Elidrissi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

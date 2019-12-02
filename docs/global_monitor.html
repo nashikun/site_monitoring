@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>global_monitor module &#8212; Site Monitorer 03-12-2019 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="main module" href="main.html" />
+    <link rel="prev" title="fixed_size module" href="fixed_size.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-global_monitor">
+<span id="global-monitor-module"></span><h1>global_monitor module<a class="headerlink" href="#module-global_monitor" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="global_monitor.GlobalMonitor">
+<em class="property">class </em><code class="sig-prename descclassname">global_monitor.</code><code class="sig-name descname">GlobalMonitor</code><span class="sig-paren">(</span><em class="sig-param">sites</em>, <em class="sig-param">logs_path='./logs'</em><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.GlobalMonitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The class that monitors the different websites, formats the metrics and outputs them to screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sites</strong> (<em>list</em>) – the list of websites to monitor. Each element is of the format <strong>(interval, utl, timeout)</strong></p>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>site_monitors</strong> (<em>dict</em>) – the dict containing the different websites and their <a class="reference internal" href="site_monitor.html#site_monitor.SiteMonitor" title="site_monitor.SiteMonitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">site_monitor.SiteMonitor</span></code></a></p></li>
+<li><p><strong>metrics</strong> (<em>dict</em>) – the latest metrics retrieved for each website, sorted by time
+contains the last 1000 of each retrieved stat</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="global_monitor.GlobalMonitor.log">
+<code class="sig-name descname">log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.GlobalMonitor.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the metrics in the appropriate file after formatting it</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="global_monitor.GlobalMonitor.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param">screen</em><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.GlobalMonitor.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start monitoring the websites and show the data on the terminal.
+:param screen: reference to the curses screen</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="global_monitor.GlobalMonitor.stop">
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.GlobalMonitor.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the monitoring.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="global_monitor.GlobalMonitor.update_metrics">
+<code class="sig-name descname">update_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.GlobalMonitor.update_metrics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="global_monitor.Writer">
+<em class="property">class </em><code class="sig-prename descclassname">global_monitor.</code><code class="sig-name descname">Writer</code><span class="sig-paren">(</span><em class="sig-param">site_monitors</em>, <em class="sig-param">logs_path</em><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.Writer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">threading.Thread</span></code></p>
+<p>A class to write the detailed stats to disk</p>
+<dl class="method">
+<dt id="global_monitor.Writer.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.Writer.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method representing the thread’s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object’s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="global_monitor.Writer.stop">
+<code class="sig-name descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#global_monitor.Writer.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Site Monitorer</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">site-monitoring</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fixed_size.html">fixed_size module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">global_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">setup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="site_monitor.html">site_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test_server.html">test_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_interface.html">user_interface module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">site-monitoring</a><ul>
+      <li>Previous: <a href="fixed_size.html" title="previous chapter">fixed_size module</a></li>
+      <li>Next: <a href="main.html" title="next chapter">main module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Anass Elidrissi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/global_monitor.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
