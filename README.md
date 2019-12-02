@@ -44,4 +44,4 @@ To exit the program, press **q**
 ## Documentation
 
 To see a detailed documentation for each module:
-[test](documentation/_build/html/index.html)
+[test](docs/index.html)
