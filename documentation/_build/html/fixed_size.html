@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>fixed_size module &#8212; Site Monitorer 03-12-2019 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="global_monitor module" href="global_monitor.html" />
+    <link rel="prev" title="site-monitoring" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fixed_size">
+<span id="fixed-size-module"></span><h1>fixed_size module<a class="headerlink" href="#module-fixed_size" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="fixed_size.FixedSizeList">
+<code class="sig-prename descclassname">fixed_size.</code><code class="sig-name descname">FixedSizeList</code><em class="property"> = functools.partial(&lt;class 'fixed_size.FixedSizeQueue'&gt;, key=&lt;function &lt;lambda&gt;&gt;)</em><a class="headerlink" href="#fixed_size.FixedSizeList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Partial class of FixedSizeQueue, which basically serves as a List with a fixed size.
+There’s one extra comparison over coding it directly, but I opted for code reusability
+since the performance difference should be insignificant.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="fixed_size.FixedSizeQueue">
+<em class="property">class </em><code class="sig-prename descclassname">fixed_size.</code><code class="sig-name descname">FixedSizeQueue</code><span class="sig-paren">(</span><em class="sig-param">capacity</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#fixed_size.FixedSizeQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A fixed size queue where items are kept in ascending order when compared by key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>capacity</strong> (<em>int</em>) – the maximum number of elements kept in the queue</p></li>
+<li><p><strong>key</strong> – the function to use to compare the elements</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sem</strong> – a semaphore to make the queue multi-thread safe</p></li>
+<li><p><strong>h</strong> (<em>list</em>) – the inner list to store elements</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="fixed_size.FixedSizeQueue.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">e</em><span class="sig-paren">)</span><a class="headerlink" href="#fixed_size.FixedSizeQueue.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>adds an element to the queue, while keeping it increasing with respect to <strong>key</strong></p>
+<dl class="field-list simple">
+<dt class="field-odd">Note</dt>
+<dd class="field-odd"><p>A binary heap might have been better for insertion, but I opted for a regular
+list as heaps mess up the order of the elements, and we need it.
+Additionally the items to be added should be pretty much in order
+most of the time so very little comparisons are done</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>e</strong> – the element to add to the queue</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fixed_size.FixedSizeQueue.get_slice">
+<code class="sig-name descname">get_slice</code><span class="sig-paren">(</span><em class="sig-param">min_value</em>, <em class="sig-param">max_value</em><span class="sig-paren">)</span><a class="headerlink" href="#fixed_size.FixedSizeQueue.get_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the list of all values in lust whose <strong>key</strong> value is between <strong>min_value</strong> and <strong>max_value</strong>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_value</strong> (<em>int</em>) – the maximum value.</p></li>
+<li><p><strong>max_value</strong> (<em>int</em>) – the minimum value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Site Monitorer</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">site-monitoring</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fixed_size module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="global_monitor.html">global_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">setup module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="site_monitor.html">site_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="test_server.html">test_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tests.html">tests module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_interface.html">user_interface module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">site-monitoring</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">site-monitoring</a></li>
+      <li>Next: <a href="global_monitor.html" title="next chapter">global_monitor module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Anass Elidrissi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/fixed_size.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
