@@ -112,7 +112,7 @@ class SiteMonitor(Thread):
             #  If it is available but was unavailable during the previous check
             if availability >= 0.8 and self.unavailable_since:
                 self.unavailable_since = None
-                self.recovered_at = t
+                self.recovered_at = t - 120
             elif availability < 0.8:
                 #  If it has recovered during the previous check
                 if self.recovered_at:
