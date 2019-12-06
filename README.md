@@ -26,7 +26,7 @@ $ pip install .
 ## Usage
 In the projet directory, eun
 ```shell
-python -f input_file -l logs_file
+python main.py -f input_file -l logs_file
 ```
 Where input_file is the file with websites to monitor. Every line of the file should be
 > website_name, url, ping_interval, timeout
